@@ -3,54 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth - Photo On Top</title>
+  <title>KMUTT Photobooth - Pro Edition</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Noto Sans Thai', sans-serif; touch-action: manipulation; }
     .gradient-bg { background: #d32f2f; } 
     
+    /* พื้นที่แสดงผลบนหน้าจอ */
     #captureArea { 
       width: 220px; 
       height: 600px; 
       position: relative; 
       background: #fff; 
-      overflow: hidden; 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
     }
 
-    /* เลเยอร์กรอบ Canva (ปรับให้อยู่ชั้นล่าง) */
     #frameOverlay { 
       position: absolute; 
       inset: 0; 
-      z-index: 10; /* กรอบอยู่ชั้น 10 */
+      z-index: 50; 
       background-size: 100% 100%; 
       background-repeat: no-repeat;
       pointer-events: none; 
     }
     
-    /* เลเยอร์รูปถ่าย (ปรับให้ลอยทับหน้าสุด) */
     .photo-item { 
       position: absolute; 
       left: 15px; 
       width: 190px; 
       height: 140px; 
-      z-index: 100; /* ดันขึ้นมาอยู่หน้าสุดชั้น 100 */
-      background: #fff; 
-      border: 6px solid #fff; /* ขอบขาวโพลารอยด์ */
-      box-shadow: 0 5px 15px rgba(0,0,0,0.4); 
+      z-index: 10; 
+      background: #f8f8f8; 
+      border: 4px solid #fff; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
       overflow: hidden; 
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    /* จูนพิกัดให้ตรงกับช่อง มจธ. (ถ้ายังไม่ตรงขยับเลข top ได้ครับ) */
+    /* พิกัดสำหรับแสดงผลบนจอ */
     .photo-1 { top: 110px; }
     .photo-2 { top: 265px; }
     .photo-3 { top: 420px; }
     
-    .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
     #camera { transform: scaleX(-1); border-radius: 1rem; width: 100%; background: #000; }
     .flash { animation: flashAnim 0.2s ease-out; }
     @keyframes flashAnim { 0% { background: white; opacity: 1; } 100% { background: transparent; opacity: 0; } }
@@ -60,32 +59,30 @@
   <div id="flashOverlay" class="fixed inset-0 z-[150] pointer-events-none"></div>
   
   <header class="text-center mb-6 text-white">
-    <h1 class="text-3xl font-bold italic drop-shadow-lg">❤️ KMUTT BLOOD DONATION</h1>
-    <p class="text-sm opacity-90">ถ่ายภาพที่ระลึก (รูปจะลอยทับกรอบ)</p>
+    <h1 class="text-3xl font-bold italic drop-shadow-lg uppercase tracking-tight">KMUTT Blood Donation</h1>
+    <p class="text-sm opacity-90">Experience the Professional Photobooth</p>
   </header>
 
   <div class="max-w-5xl w-full grid lg:grid-cols-2 gap-8 items-start">
     <div class="glass-card rounded-3xl p-6 text-center">
-      <div class="relative overflow-hidden bg-black rounded-2xl mb-4">
+      <div class="relative overflow-hidden bg-black rounded-2xl mb-4 shadow-inner">
         <video id="camera" autoplay playsinline muted></video>
         <div id="countdown" class="absolute inset-0 flex items-center justify-center text-white text-9xl font-bold hidden">3</div>
       </div>
-      <button id="captureBtn" class="w-full py-5 bg-white text-red-600 rounded-full font-bold text-2xl shadow-xl active:scale-95 transition-all">📸 กดถ่ายรูป (3 ครั้ง)</button>
+      <button id="captureBtn" class="w-full py-5 bg-white text-red-600 rounded-full font-bold text-2xl shadow-xl hover:bg-gray-100 active:scale-95 transition-all">📸 TAKE PHOTO</button>
     </div>
 
     <div class="glass-card rounded-3xl p-6 flex flex-col items-center">
       <div id="captureArea" class="rounded-sm">
         <div id="frameOverlay" style="background-image: url('myframe.png');"></div>
-        
         <div id="photo1" class="photo-item photo-1"></div>
         <div id="photo2" class="photo-item photo-2"></div>
         <div id="photo3" class="photo-item photo-3"></div>
       </div>
 
-      <div class="w-full mt-6 grid grid-cols-2 gap-3 no-print">
-        <button id="resetBtn" class="py-3 bg-black/30 text-white rounded-2xl">🔄 เริ่มใหม่</button>
-        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold">💾 บันทึกรูป</button>
-        <button id="printBtn" class="col-span-2 py-3 bg-blue-600 text-white rounded-2xl font-bold">🖨️ สั่งปริ้นรูป</button>
+      <div class="w-full mt-8 grid grid-cols-2 gap-3">
+        <button id="resetBtn" class="py-3 bg-black/30 text-white rounded-2xl text-sm font-medium border border-white/20">🔄 RESET</button>
+        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold shadow-lg hover:bg-green-700 transition-colors">💾 DOWNLOAD HD</button>
       </div>
     </div>
   </div>
@@ -98,8 +95,17 @@
     frameImg.src = 'myframe.png';
 
     async function init() {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-      document.getElementById('camera').srcObject = stream;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'user',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }, 
+            audio: false 
+        });
+        document.getElementById('camera').srcObject = stream;
+      } catch (e) { alert("กรุณาเปิดการเข้าถึงกล้องคุณภาพสูง"); }
     }
 
     document.getElementById('captureBtn').onclick = () => {
@@ -119,12 +125,13 @@
     function takePhoto() {
       const v = document.getElementById('camera');
       const c = document.getElementById('canvas');
-      c.width = v.videoWidth; c.height = v.videoHeight;
+      c.width = v.videoWidth; 
+      c.height = v.videoHeight;
       const ctx = c.getContext('2d');
       ctx.translate(c.width, 0); ctx.scale(-1, 1);
       ctx.drawImage(v, 0, 0);
       
-      const data = c.toDataURL('image/jpeg');
+      const data = c.toDataURL('image/jpeg', 0.95);
       photos.push(data);
       
       const target = document.getElementById(`photo${photos.length}`);
@@ -135,47 +142,66 @@
       setTimeout(() => flash.classList.remove('flash'), 200);
     }
 
+    // ฟังก์ชันดาวน์โหลดมาตรฐานระดับ Pro
     document.getElementById('downloadBtn').onclick = () => {
-      if(photos.length < 3) return alert("ถ่ายให้ครบก่อนนะครับ");
-      const area = document.getElementById('captureArea');
+      if(photos.length < 3) return alert("ถ่ายให้ครบ 3 รูปก่อนนะครับ");
+      
       const finalCanvas = document.createElement('canvas');
       const fctx = finalCanvas.getContext('2d');
-      const scale = 2;
+      
+      // ตั้งความละเอียดสูงพิเศษ (4x Scale)
+      const upscale = 4;
+      const w = 220;
+      const h = 600;
+      finalCanvas.width = w * upscale;
+      finalCanvas.height = h * upscale;
+      fctx.scale(upscale, upscale);
 
-      finalCanvas.width = 220 * scale;
-      finalCanvas.height = 600 * scale;
-      fctx.scale(scale, scale);
+      // 1. ลงพื้นหลังขาวสะอาด
+      fctx.fillStyle = "#ffffff";
+      fctx.fillRect(0, 0, w, h);
 
-      fctx.fillStyle = "#fff";
-      fctx.fillRect(0, 0, 220, 600);
-
-      // วาดกรอบก่อน (เป็นพื้นหลัง)
-      if(frameImg.complete) {
-        fctx.drawImage(frameImg, 0, 0, 220, 600);
-      }
-
-      // วาดรูปถ่ายทับทีหลัง (เพื่อให้ลอยอยู่บนกรอบในไฟล์ที่ดาวน์โหลดด้วย)
+      // 2. วาดรูปถ่ายทีละใบอย่างละเอียด
       const positions = [110, 265, 420];
-      photos.forEach((p, i) => {
+      const pW = 190;
+      const pH = 140;
+      const pX = 15;
+
+      photos.forEach((pData, i) => {
         const img = new Image();
-        img.src = p;
-        // วาดขอบขาว
+        img.src = pData;
+        
+        // วาดเงาและขอบรูปให้ดูพรีเมียม
+        fctx.save();
+        fctx.shadowColor = "rgba(0,0,0,0.15)";
+        fctx.shadowBlur = 8;
         fctx.fillStyle = "white";
-        fctx.fillRect(15, positions[i], 190, 140);
-        // วาดรูปคน
-        fctx.drawImage(img, 21, positions[i] + 6, 178, 128);
+        fctx.fillRect(pX, positions[i], pW, pH);
+        fctx.restore();
+
+        // วาดรูปถ่ายคน (จัดสัดส่วนแบบ Center Crop)
+        fctx.drawImage(img, pX + 4, positions[i] + 4, pW - 8, pH - 8);
       });
 
-      const link = document.createElement('a');
-      link.download = `KMUTT-Booth-${Date.now()}.png`;
-      link.href = finalCanvas.toDataURL('image/png');
-      link.click();
+      // 3. วาดกรอบ Canva ทับหน้าสุด (เน้นความคมชัด)
+      if(frameImg.complete) {
+        fctx.drawImage(frameImg, 0, 0, w, h);
+        
+        // ส่งไฟล์คุณภาพสูงสุด
+        const link = document.createElement('a');
+        link.download = `KMUTT_PRO_BOOTH_${Date.now()}.png`;
+        link.href = finalCanvas.toDataURL('image/png', 1.0);
+        link.click();
+      } else {
+        alert("กรุณารอกรอบรูปโหลดสักครู่...");
+      }
     };
 
-    document.getElementById('printBtn').onclick = () => window.print();
     document.getElementById('resetBtn').onclick = () => {
-      photos = [];
-      [1,2,3].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
+      if(confirm("ถ่ายใหม่ทั้งหมด?")) {
+        photos = [];
+        [1,2,3].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
+      }
     };
 
     init();
