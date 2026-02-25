@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth - Layer Fixed</title>
+  <title>KMUTT Photobooth - Photo On Top</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -16,64 +16,65 @@
       position: relative; 
       background: #fff; 
       overflow: hidden; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
-    /* เลเยอร์กรอบ Canva (ปรับให้อยู่ชั้นหลังรูปถ่าย) */
+    /* เลเยอร์กรอบ Canva (ปรับให้อยู่ชั้นล่าง) */
     #frameOverlay { 
       position: absolute; 
       inset: 0; 
-      z-index: 10; /* กรอบอยู่เลเยอร์ 10 */
+      z-index: 10; /* กรอบอยู่ชั้น 10 */
       background-size: 100% 100%; 
       background-repeat: no-repeat;
       pointer-events: none; 
     }
     
-    /* เลเยอร์รูปถ่าย (ดันขึ้นมาอยู่ชั้นหน้าสุด z-index: 100) */
+    /* เลเยอร์รูปถ่าย (ปรับให้ลอยทับหน้าสุด) */
     .photo-item { 
       position: absolute; 
       left: 15px; 
       width: 190px; 
       height: 140px; 
-      z-index: 100; /* รูปถ่ายลอยทับกรอบ */
+      z-index: 100; /* ดันขึ้นมาอยู่หน้าสุดชั้น 100 */
       background: #fff; 
-      border: 6px solid #fff; /* ขอบขาวสไตล์โพลารอยด์ */
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+      border: 6px solid #fff; /* ขอบขาวโพลารอยด์ */
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4); 
       overflow: hidden; 
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    /* พิกัดตำแหน่งรูปถ่าย (จูนให้ตรงกับรู มจธ. ของคุณ) */
+    /* จูนพิกัดให้ตรงกับช่อง มจธ. (ถ้ายังไม่ตรงขยับเลข top ได้ครับ) */
     .photo-1 { top: 110px; }
     .photo-2 { top: 265px; }
     .photo-3 { top: 420px; }
     
-    .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
     #camera { transform: scaleX(-1); border-radius: 1rem; width: 100%; background: #000; }
     .flash { animation: flashAnim 0.2s ease-out; }
     @keyframes flashAnim { 0% { background: white; opacity: 1; } 100% { background: transparent; opacity: 0; } }
   </style>
 </head>
 <body class="h-full gradient-bg p-4 flex flex-col items-center">
-  <div id="flashOverlay" class="fixed inset-0 z-[100] pointer-events-none"></div>
+  <div id="flashOverlay" class="fixed inset-0 z-[150] pointer-events-none"></div>
   
   <header class="text-center mb-6 text-white">
     <h1 class="text-3xl font-bold italic drop-shadow-lg">❤️ KMUTT BLOOD DONATION</h1>
-    <p class="text-sm opacity-90">ถ่ายภาพที่ระลึก 3 ช็อต</p>
+    <p class="text-sm opacity-90">ถ่ายภาพที่ระลึก (รูปจะลอยทับกรอบ)</p>
   </header>
 
   <div class="max-w-5xl w-full grid lg:grid-cols-2 gap-8 items-start">
     <div class="glass-card rounded-3xl p-6 text-center">
-      <div class="relative overflow-hidden bg-black rounded-2xl mb-4 border-4 border-white/10">
+      <div class="relative overflow-hidden bg-black rounded-2xl mb-4">
         <video id="camera" autoplay playsinline muted></video>
         <div id="countdown" class="absolute inset-0 flex items-center justify-center text-white text-9xl font-bold hidden">3</div>
       </div>
-      <button id="captureBtn" class="w-full py-5 bg-white text-red-600 rounded-full font-bold text-2xl shadow-2xl active:scale-95 transition-all">📸 กดถ่ายรูป (3 ครั้ง)</button>
+      <button id="captureBtn" class="w-full py-5 bg-white text-red-600 rounded-full font-bold text-2xl shadow-xl active:scale-95 transition-all">📸 กดถ่ายรูป (3 ครั้ง)</button>
     </div>
 
     <div class="glass-card rounded-3xl p-6 flex flex-col items-center">
-      <div id="captureArea" class="rounded-sm shadow-2xl">
+      <div id="captureArea" class="rounded-sm">
         <div id="frameOverlay" style="background-image: url('myframe.png');"></div>
         
         <div id="photo1" class="photo-item photo-1"></div>
@@ -81,9 +82,10 @@
         <div id="photo3" class="photo-item photo-3"></div>
       </div>
 
-      <div class="w-full mt-6 grid grid-cols-2 gap-3">
-        <button id="resetBtn" class="py-3 bg-black/30 text-white rounded-2xl text-sm">🔄 ถ่ายใหม่</button>
-        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold text-sm">💾 บันทึกรูป</button>
+      <div class="w-full mt-6 grid grid-cols-2 gap-3 no-print">
+        <button id="resetBtn" class="py-3 bg-black/30 text-white rounded-2xl">🔄 เริ่มใหม่</button>
+        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold">💾 บันทึกรูป</button>
+        <button id="printBtn" class="col-span-2 py-3 bg-blue-600 text-white rounded-2xl font-bold">🖨️ สั่งปริ้นรูป</button>
       </div>
     </div>
   </div>
@@ -134,7 +136,7 @@
     }
 
     document.getElementById('downloadBtn').onclick = () => {
-      if(photos.length < 3) return alert("ถ่ายให้ครบ 3 รูปก่อนนะครับ");
+      if(photos.length < 3) return alert("ถ่ายให้ครบก่อนนะครับ");
       const area = document.getElementById('captureArea');
       const finalCanvas = document.createElement('canvas');
       const fctx = finalCanvas.getContext('2d');
@@ -147,20 +149,22 @@
       fctx.fillStyle = "#fff";
       fctx.fillRect(0, 0, 220, 600);
 
-      // วาดรูปถ่ายก่อน (อยู่เลเยอร์หลัง)
+      // วาดกรอบก่อน (เป็นพื้นหลัง)
+      if(frameImg.complete) {
+        fctx.drawImage(frameImg, 0, 0, 220, 600);
+      }
+
+      // วาดรูปถ่ายทับทีหลัง (เพื่อให้ลอยอยู่บนกรอบในไฟล์ที่ดาวน์โหลดด้วย)
       const positions = [110, 265, 420];
       photos.forEach((p, i) => {
         const img = new Image();
         img.src = p;
+        // วาดขอบขาว
         fctx.fillStyle = "white";
         fctx.fillRect(15, positions[i], 190, 140);
+        // วาดรูปคน
         fctx.drawImage(img, 21, positions[i] + 6, 178, 128);
       });
-
-      // วาดกรอบทับ (ถ้าคุณต้องการให้กรอบทับขอบรูปถ่าย)
-      if(frameImg.complete) {
-        fctx.drawImage(frameImg, 0, 0, 220, 600);
-      }
 
       const link = document.createElement('a');
       link.download = `KMUTT-Booth-${Date.now()}.png`;
@@ -168,6 +172,7 @@
       link.click();
     };
 
+    document.getElementById('printBtn').onclick = () => window.print();
     document.getElementById('resetBtn').onclick = () => {
       photos = [];
       [1,2,3].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
