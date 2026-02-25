@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="th" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Photobooth Studio Pro</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Noto+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Space Grotesk', 'Noto Sans Thai', sans-serif; touch-action: manipulation; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); }
+    .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .btn-capture { background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3); background-size: 300% 300%; animation: gradient-shift 3s ease infinite; }
+    @keyframes gradient-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .photo-slot { background: #1a1a2e; border: 2px dashed rgba(255, 255, 255, 0.3); overflow: hidden; position: relative; }
+    .sticker-item { position: absolute; cursor: move; touch-action: none; user-select: none; z-index: 50; font-size: 2rem; }
+    .flash-effect { animation: flash 0.3s ease-out; }
+    @keyframes flash { 0% { background: white; } 100% { background: transparent; } }
+    .countdown-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); font-size: 6rem; color: white; z-index: 100; }
+    #camera { transform: scaleX(-1); } /* Mirror effect */
+  </style>
+</head>
+<body class="h-full gradient-bg overflow-x-hidden">
+  <div class="min-h-full p-4">
+    <header class="text-center mb-6">
+      <h1 class="text-3xl font-bold text-white drop-shadow-lg">✨ Photobooth Studio ✨</h1>
+      <p class="text-white/80 text-sm">ถ่ายภาพ • แต่งสติกเกอร์ • ดาวน์โหลด</p>
+    </header>
+
+    <div class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-6">
+      <div class="glass-card rounded-3xl p-4">
+        <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-black shadow-2xl">
+          <video id="camera" autoplay playsinline class="w-full h-full object-cover"></video>
+          <canvas id="canvas" class="hidden"></canvas>
+          <div id="countdown" class="countdown-overlay hidden">3</div>
+          <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+            <button id="captureBtn" class="btn-capture px-8 py-3 rounded-full text-white font-bold shadow-xl">📸 ถ่ายรูป!</button>
+            <button id="switchCamBtn" class="bg-white/20 p-3 rounded-full text-white">🔄</button>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <p class="text-white text-xs mb-2">🎞️ ฟิลเตอร์:</p>
+          <div class="flex gap-2 overflow-x-auto no-scrollbar">
+            <button class="filter-btn px-3 py-1 rounded-lg bg-white/20 text-white text-xs whitespace-nowrap active" data-filter="none">Original</button>
+            <button class="filter-btn px-3 py-1 rounded-lg bg-white/20 text-white text-xs whitespace-nowrap" data-filter="grayscale(100%)">B&W</button>
+            <button class="filter-btn px-3 py-1 rounded-lg bg-white/20 text-white text-xs whitespace-nowrap" data-filter="sepia(80%)">Vintage</button>
+            <button class="filter-btn px-3 py-1 rounded-lg bg-white/20 text-white text-xs whitespace-nowrap" data-filter="brightness(1.2) contrast(1.1)">Bright</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-3xl p-4">
+        <div class="flex gap-2 mb-4 overflow-x-auto p-1">
+          <button class="template-btn bg-pink-500 text-white px-3 py-1 rounded-lg text-xs" data-template="strip4">Strip 4</button>
+          <button class="template-btn bg-white/20 text-white px-3 py-1 rounded-lg text-xs" data-template="grid4">Grid 4</button>
+          <button class="template-btn bg-white/20 text-white px-3 py-1 rounded-lg text-xs" data-template="single">Single</button>
+        </div>
+
+        <div class="mb-4 bg-black/20 p-2 rounded-xl flex gap-4 overflow-x-auto text-2xl">
+          <span class="sticker-opt cursor-pointer">❤️</span><span class="sticker-opt cursor-pointer">✨</span>
+          <span class="sticker-opt cursor-pointer">🔥</span><span class="sticker-opt cursor-pointer">👑</span>
+          <span class="sticker-opt cursor-pointer">🌸</span><span class="sticker-opt cursor-pointer">🎀</span>
+        </div>
+
+        <div class="flex justify-center mb-4">
+          <div id="captureArea" class="relative p-3 rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 shadow-xl overflow-hidden">
+            <div id="templateContent" class="bg-white p-2 rounded-lg grid gap-2" style="width: 160px;">
+              </div>
+            <p class="text-[10px] text-center text-white mt-2 font-bold">PHOTOBOOTH STUDIO</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button id="resetBtn" class="flex-1 py-2 bg-red-500/50 text-white rounded-xl text-sm">🔄 รีเซ็ต</button>
+          <button id="downloadBtn" class="flex-1 py-2 bg-green-500 text-white rounded-xl text-sm font-bold">💾 ดาวน์โหลด</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let photos = [];
+    let currentFilter = 'none';
+    let currentFacingMode = 'user';
+    let stream = null;
+    let currentTemplate = 'strip4';
+
+    const templates = {
+      strip4: { slots: 4, cols: 1, width: '160px' },
+      grid4: { slots: 4, cols: 2, width: '220px' },
+      single: { slots: 1, cols: 1, width: '220px' }
+    };
+
+    async function initCamera() {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: currentFacingMode, width: 720 },
+          audio: false
+        });
+        document.getElementById('camera').srcObject = stream;
+      } catch (err) { alert("เข้าถึงกล้องไม่ได้ครับ"); }
+    }
+
+    // Capture Logic
+    document.getElementById('captureBtn').onclick = async () => {
+      const template = templates[currentTemplate];
+      if (photos.length >= template.slots) return alert("เต็มแล้วครับ! รีเซ็ตก่อนนะ");
+
+      let count = 3;
+      const overlay = document.getElementById('countdown');
+      overlay.classList.remove('hidden');
+      
+      const timer = setInterval(() => {
+        count--;
+        overlay.textContent = count;
+        if (count <= 0) {
+          clearInterval(timer);
+          overlay.classList.add('hidden');
+          overlay.textContent = '3';
+          doCapture();
+        }
+      }, 800);
+    };
+
+    function doCapture() {
+      const video = document.getElementById('camera');
+      const canvas = document.getElementById('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+
+      // Mirror & Filter
+      ctx.filter = currentFilter;
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0);
+      
+      photos.push(canvas.toDataURL('image/jpeg'));
+      renderTemplate();
+      
+      // Flash
+      video.parentElement.classList.add('flash-effect');
+      setTimeout(() => video.parentElement.classList.remove('flash-effect'), 300);
+    }
+
+    function renderTemplate() {
+      const container = document.getElementById('templateContent');
+      const config = templates[currentTemplate];
+      container.style.width = config.width;
+      container.className = `bg-white p-2 rounded-lg grid gap-2 grid-cols-${config.cols}`;
+      
+      container.innerHTML = '';
+      for (let i = 0; i < config.slots; i++) {
+        const div = document.createElement('div');
+        div.className = 'photo-slot aspect-[4/3] rounded shadow-inner flex items-center justify-center text-gray-500 text-xs';
+        if (photos[i]) {
+          div.innerHTML = `<img src="${photos[i]}" class="w-full h-full object-cover">`;
+        } else {
+          div.textContent = i + 1;
+        }
+        container.appendChild(div);
+      }
+    }
+
+    // Stickers System (Mobile Friendly)
+    document.querySelectorAll('.sticker-opt').forEach(opt => {
+      opt.onclick = () => {
+        const s = document.createElement('div');
+        s.className = 'sticker-item';
+        s.innerHTML = opt.innerHTML;
+        s.style.left = '40%'; s.style.top = '40%';
+        makeDraggable(s);
+        document.getElementById('captureArea').appendChild(s);
+      };
+    });
+
+    function makeDraggable(el) {
+      let p1 = 0, p2 = 0, p3 = 0, p4 = 0;
+      el.ontouchstart = dragStart;
+      el.onmousedown = dragStart;
+
+      function dragStart(e) {
+        const event = e.type === 'touchstart' ? e.touches[0] : e;
+        p3 = event.clientX; p4 = event.clientY;
+        document.onmouseup = document.ontouchend = () => {
+          document.onmousemove = document.ontouchmove = null;
+        };
+        document.onmousemove = document.ontouchmove = (e2) => {
+          const moveEv = e2.type === 'touchmove' ? e2.touches[0] : e2;
+          p1 = p3 - moveEv.clientX; p2 = p4 - moveEv.clientY;
+          p3 = moveEv.clientX; p4 = moveEv.clientY;
+          el.style.top = (el.offsetTop - p2) + "px";
+          el.style.left = (el.offsetLeft - p1) + "px";
+        };
+      }
+    }
+
+    // Filters & Controls
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.onclick = () => {
+        currentFilter = btn.dataset.filter;
+        document.getElementById('camera').style.filter = currentFilter;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('bg-pink-500'));
+        btn.classList.add('bg-pink-500');
+      };
+    });
+
+    document.getElementById('switchCamBtn').onclick = () => {
+      currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+      initCamera();
+    };
+
+    document.getElementById('resetBtn').onclick = () => {
+      photos = [];
+      document.querySelectorAll('.sticker-item').forEach(s => s.remove());
+      renderTemplate();
+    };
+
+    // Download (ใช้วิธี screenshot ง่ายๆ สำหรับมือถือ)
+    document.getElementById('downloadBtn').onclick = async () => {
+       alert("เคล็ดลับ: บนมือถือ แนะนำให้แคปหน้าจอรูปที่แต่งเสร็จแล้วเพื่อความไวและได้สติกเกอร์ครบถ้วนครับ!");
+    };
+
+    initCamera();
+    renderTemplate();
+  </script>
+</body>
+</html>
