@@ -3,23 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth - Final Fix</title>
+  <title>KMUTT Photobooth - Final Stable</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Noto Sans Thai', sans-serif; touch-action: manipulation; }
     .gradient-bg { background: #d32f2f; } /* สีแดง มจธ. */
-    #captureArea { width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; }
-    #frameOverlay { position: absolute; inset: 0; z-index: 50; background-size: 100% 100%; pointer-events: none; }
     
-    /* จัดพิกัดรูปถ่าย 3 ใบ ให้ตรงกับช่องใน Canva (ปรับตัวเลข top ตรงนี้ได้ถ้าไม่ตรง) */
-    .photo-item { position: absolute; left: 15px; width: 190px; height: 140px; z-index: 10; background: #eee; border-radius: 5px; overflow: hidden; }
-    .photo-1 { top: 115px; }
-    .photo-2 { top: 275px; }
-    .photo-3 { top: 435px; }
+    /* พื้นที่แสดงผลรูปภาพ */
+    #captureArea { 
+      width: 220px; 
+      height: 600px; 
+      position: relative; 
+      background: #fff; 
+      overflow: hidden; 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+
+    /* เลเยอร์กรอบ Canva (อยู่หน้าสุด) */
+    #frameOverlay { 
+      position: absolute; 
+      inset: 0; 
+      z-index: 50; 
+      background-size: 100% 100%; 
+      background-repeat: no-repeat;
+      pointer-events: none; 
+    }
+    
+    /* สไตล์รูปถ่ายแต่ละใบ (ใส่ขอบขาวแบบโพลารอยด์) */
+    .photo-item { 
+      position: absolute; 
+      left: 15px; 
+      width: 190px; 
+      height: 140px; 
+      z-index: 10; 
+      background: #fff; 
+      border: 6px solid #fff; /* ขอบขาวรอบรูป */
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+      overflow: hidden; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* พิกัดตำแหน่งรูปถ่าย 1, 2, 3 (จูนให้ตรงกับรูใน Canva) */
+    .photo-1 { top: 110px; }
+    .photo-2 { top: 265px; }
+    .photo-3 { top: 420px; }
     
     .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-    #camera { transform: scaleX(-1); border-radius: 1rem; width: 100%; }
+    #camera { transform: scaleX(-1); border-radius: 1rem; width: 100%; background: #000; }
     .flash { animation: flashAnim 0.2s ease-out; }
     @keyframes flashAnim { 0% { background: white; opacity: 1; } 100% { background: transparent; opacity: 0; } }
   </style>
@@ -28,25 +61,26 @@
   <div id="flashOverlay" class="fixed inset-0 z-[100] pointer-events-none"></div>
   
   <header class="text-center mb-6 text-white">
-    <h1 class="text-3xl font-bold italic">❤️ KMUTT BLOOD DONATION</h1>
-    <p class="text-sm">ถ่ายภาพที่ระลึก 3 ช็อต</p>
+    <h1 class="text-3xl font-bold italic drop-shadow-lg">❤️ KMUTT BLOOD DONATION</h1>
+    <p class="text-sm opacity-90">ถ่ายภาพที่ระลึก 3 ช็อต (กรอบ มจธ.)</p>
   </header>
 
   <div class="max-w-5xl w-full grid lg:grid-cols-2 gap-8 items-start">
     <div class="glass-card rounded-3xl p-6 text-center">
-      <div class="relative overflow-hidden bg-black rounded-2xl mb-4">
+      <div class="relative overflow-hidden bg-black rounded-2xl mb-4 border-4 border-white/10">
         <video id="camera" autoplay playsinline muted></video>
         <div id="countdown" class="absolute inset-0 flex items-center justify-center text-white text-9xl font-bold hidden">3</div>
       </div>
       <button id="captureBtn" class="w-full py-5 bg-white text-red-600 rounded-full font-bold text-2xl shadow-2xl active:scale-95 transition-all">📸 กดถ่ายรูป (3 ครั้ง)</button>
       <div class="flex justify-center gap-2 mt-4">
-        <button class="filter-btn px-4 py-2 bg-white/20 text-white rounded-lg" data-filter="none">ปกติ</button>
-        <button class="filter-btn px-4 py-2 bg-white/20 text-white rounded-lg" data-filter="grayscale(100%)">ขาวดำ</button>
+        <button class="filter-btn px-4 py-2 bg-white/20 text-white rounded-lg text-sm" data-filter="none">ปกติ</button>
+        <button class="filter-btn px-4 py-2 bg-white/20 text-white rounded-lg text-sm" data-filter="grayscale(100%)">ขาวดำ</button>
+        <button class="filter-btn px-4 py-2 bg-white/20 text-white rounded-lg text-sm" data-filter="brightness(1.3)">สว่าง</button>
       </div>
     </div>
 
     <div class="glass-card rounded-3xl p-6 flex flex-col items-center">
-      <div id="captureArea" class="shadow-2xl">
+      <div id="captureArea" class="rounded-sm">
         <div id="frameOverlay" style="background-image: url('myframe.png');"></div>
         
         <div id="photo1" class="photo-item photo-1"></div>
@@ -55,9 +89,9 @@
       </div>
 
       <div class="w-full mt-6 grid grid-cols-2 gap-3">
-        <button id="resetBtn" class="py-3 bg-black/30 text-white rounded-2xl">🔄 ถ่ายใหม่</button>
-        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold">💾 บันทึกรูป</button>
-        <button id="printBtn" class="col-span-2 py-3 bg-blue-600 text-white rounded-2xl font-bold">🖨️ สั่งปริ้นรูป</button>
+        <button id="resetBtn" class="py-3 bg-black/30 text-white rounded-2xl text-sm">🔄 ถ่ายใหม่</button>
+        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold text-sm">💾 บันทึกรูป</button>
+        <button id="printBtn" class="col-span-2 py-3 bg-blue-600 text-white rounded-2xl font-bold">🖨️ สั่งปริ้นรูปภาพ</button>
       </div>
     </div>
   </div>
@@ -68,16 +102,17 @@
     let photos = [];
     let currentFilter = 'none';
     let frameImg = new Image();
-    frameImg.src = 'myframe.png';
+    frameImg.src = 'myframe.png'; // ตรวจสอบชื่อไฟล์ใน GitHub ให้ตรงกัน
 
-    // เริ่มกล้อง
     async function init() {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-      document.getElementById('camera').srcObject = stream;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        document.getElementById('camera').srcObject = stream;
+      } catch (err) { alert("กรุณาอนุญาตให้เข้าถึงกล้องครับ"); }
     }
 
     document.getElementById('captureBtn').onclick = () => {
-      if (photos.length >= 3) return alert("ครบ 3 รูปแล้วจ้า");
+      if (photos.length >= 3) return alert("ครบ 3 รูปแล้วครับ กด 'ถ่ายใหม่' เพื่อเริ่มใหม่");
       let count = 3;
       const el = document.getElementById('countdown');
       el.classList.remove('hidden');
@@ -102,53 +137,64 @@
       const data = c.toDataURL('image/jpeg');
       photos.push(data);
       
-      // แสดงรูปในช่อง
       const target = document.getElementById(`photo${photos.length}`);
       target.innerHTML = `<img src="${data}" class="w-full h-full object-cover">`;
       
-      // เอฟเฟกต์แฟลช
       const flash = document.getElementById('flashOverlay');
       flash.classList.add('flash');
       setTimeout(() => flash.classList.remove('flash'), 200);
     }
 
     document.getElementById('downloadBtn').onclick = () => {
-      if(photos.length < 3) return alert("ถ่ายให้ครบก่อนนะ");
+      if(photos.length < 3) return alert("ถ่ายให้ครบ 3 รูปก่อนนะครับ");
       const area = document.getElementById('captureArea');
       const finalCanvas = document.createElement('canvas');
       const fctx = finalCanvas.getContext('2d');
-      const scale = 2; // เพิ่มความชัด
+      const scale = 2; // เพิ่มความละเอียดภาพ
 
       finalCanvas.width = 220 * scale;
       finalCanvas.height = 600 * scale;
       fctx.scale(scale, scale);
 
       // 1. วาดสีพื้น
-      fctx.fillStyle = "white";
+      fctx.fillStyle = "#fff";
       fctx.fillRect(0, 0, 220, 600);
 
-      // 2. วาดรูปถ่ายตามพิกัดเป๊ะๆ
-      const positions = [115, 275, 435];
+      // 2. วาดรูปถ่าย 3 ใบ (พร้อมขอบขาว)
+      const positions = [110, 265, 420];
       photos.forEach((p, i) => {
         const img = new Image();
         img.src = p;
-        fctx.drawImage(img, 15, positions[i], 190, 140);
+        // วาดส่วนขอบขาวของรูปแต่ละใบ
+        fctx.fillStyle = "white";
+        fctx.fillRect(15, positions[i], 190, 140);
+        // วาดรูปถ่าย (เว้นระยะขอบ border 6px)
+        fctx.drawImage(img, 21, positions[i] + 6, 178, 128);
       });
 
-      // 3. วาดกรอบทับ (ต้องรอโหลดรูปกรอบ)
+      // 3. วาดกรอบ Canva ทับหน้าสุด
       if(frameImg.complete) {
         fctx.drawImage(frameImg, 0, 0, 220, 600);
+      } else {
+        alert("กรุณารอกรอบรูปโหลดสักครู่ หรือรีเฟรชหน้าเว็บครับ");
       }
 
       const link = document.createElement('a');
-      link.download = 'KMUTT-Booth.png';
-      link.href = finalCanvas.toDataURL();
+      link.download = `KMUTT-Booth-${Date.now()}.png`;
+      link.href = finalCanvas.toDataURL('image/png');
       link.click();
     };
 
+    document.getElementById('printBtn').onclick = () => {
+      if(photos.length === 0) return alert("ถ่ายรูปก่อนสั่งปริ้นนะครับ");
+      window.print();
+    };
+
     document.getElementById('resetBtn').onclick = () => {
-      photos = [];
-      [1,2,3].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
+      if(confirm("ต้องการล้างรูปภาพเพื่อถ่ายใหม่ใช่ไหม?")) {
+        photos = [];
+        [1,2,3].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
+      }
     };
 
     document.querySelectorAll('.filter-btn').forEach(b => b.onclick = () => {
