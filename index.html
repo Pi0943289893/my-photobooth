@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Photobooth Pro - Canva Edition</title>
+  <title>Photobooth KMUTT - Edition</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Noto+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
   <style>
@@ -12,14 +12,11 @@
     .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); }
     .btn-capture { background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3); background-size: 300% 300%; animation: gradient-shift 3s ease infinite; }
     @keyframes gradient-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    .photo-slot { background: #1a1a2e; overflow: hidden; position: relative; z-index: 5; }
+    .photo-slot { background: #1a1a2e; overflow: hidden; position: relative; z-index: 5; border-radius: 4px; }
     .sticker-item { position: absolute; cursor: move; touch-action: none; user-select: none; z-index: 50; font-size: 2.5rem; line-height: 1; }
-    .flash-effect { animation: flash 0.3s ease-out; }
-    @keyframes flash { 0% { background: white; } 100% { background: transparent; } }
-    .countdown-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); font-size: 6rem; color: white; z-index: 100; }
     #camera { transform: scaleX(-1); }
     
-    /* เลเยอร์ของกรอบ Canva */
+    /* เลเยอร์กรอบ Canva */
     #frameOverlay {
         position: absolute; inset: 0; pointer-events: none; z-index: 20;
         background-size: 100% 100%; background-repeat: no-repeat;
@@ -29,15 +26,14 @@
       body * { visibility: hidden; }
       #captureArea, #captureArea * { visibility: visible !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       #captureArea { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: auto !important; border: none !important; }
-      .no-print { display: none !important; }
     }
   </style>
 </head>
 <body class="h-full gradient-bg overflow-x-hidden">
   <div class="min-h-full p-4 no-print">
-    <header class="text-center mb-6">
-      <h1 class="text-3xl font-bold text-white drop-shadow-lg">✨ Photobooth Studio ✨</h1>
-      <p class="text-white/80 text-sm">ออกแบบกรอบจาก Canva แล้วมาถ่ายรูปกัน!</p>
+    <header class="text-center mb-6 text-white">
+      <h1 class="text-3xl font-bold drop-shadow-lg">📸 KMUTT Photobooth</h1>
+      <p class="text-sm opacity-80">ถ่ายรูปธีม มจธ. พร้อมกรอบ Canva</p>
     </header>
 
     <div class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-6">
@@ -45,48 +41,40 @@
         <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-black shadow-2xl">
           <video id="camera" autoplay playsinline muted class="w-full h-full object-cover"></video>
           <canvas id="canvas" class="hidden"></canvas>
-          <div id="countdown" class="countdown-overlay hidden">3</div>
+          <div id="countdown" class="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-8xl font-bold hidden">3</div>
           <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-            <button id="captureBtn" class="btn-capture px-8 py-3 rounded-full text-white font-bold shadow-xl">📸 ถ่ายรูป!</button>
-            <button id="switchCamBtn" class="bg-white/20 p-3 rounded-full text-white">🔄</button>
+            <button id="captureBtn" class="btn-capture px-10 py-3 rounded-full text-white font-bold shadow-xl">📸 ถ่าย!</button>
           </div>
         </div>
-        <div class="mt-4 overflow-x-auto">
-          <div class="flex gap-2 pb-2">
-            <button class="filter-btn px-4 py-1 rounded-lg bg-white/20 text-white text-xs active" data-filter="none">Normal</button>
+        <div class="mt-4 flex gap-2 overflow-x-auto">
+            <button class="filter-btn px-4 py-1 rounded-lg bg-white/20 text-white text-xs" data-filter="none">Normal</button>
             <button class="filter-btn px-4 py-1 rounded-lg bg-white/20 text-white text-xs" data-filter="grayscale(100%)">B&W</button>
-            <button class="filter-btn px-4 py-1 rounded-lg bg-white/20 text-white text-xs" data-filter="sepia(80%)">Retro</button>
-            <button class="filter-btn px-4 py-1 rounded-lg bg-white/20 text-white text-xs" data-filter="brightness(1.2) contrast(1.1)">Bright</button>
-          </div>
+            <button class="filter-btn px-4 py-1 rounded-lg bg-white/20 text-white text-xs" data-filter="brightness(1.2)">Bright</button>
         </div>
       </div>
 
       <div class="glass-card rounded-3xl p-4">
-        <p class="text-white text-xs mb-2">🖼️ เลือกกรอบ Canva:</p>
-        <div id="frameSelect" class="flex gap-2 mb-4 overflow-x-auto p-1">
-            <button class="frame-btn px-3 py-1 rounded-lg bg-pink-500 text-white text-xs whitespace-nowrap" data-frame="">สีพื้นปกติ</button>
-            <button class="frame-btn px-3 py-1 rounded-lg bg-white/20 text-white text-xs whitespace-nowrap" data-frame="myframe1.png">กรอบ Canva 1</button>
-        </div>
+        <p class="text-white text-xs mb-2 uppercase tracking-widest font-semibold">1. เลือกเทมเพลต</p>
+        <div id="templateSelect" class="flex gap-2 mb-4 overflow-x-auto p-1"></div>
 
-        <p class="text-white text-xs mb-2">🎁 สติกเกอร์:</p>
-        <div id="stickerTray" class="mb-4 bg-black/20 p-2 rounded-xl flex gap-4 overflow-x-auto text-3xl">
-          <span class="cursor-pointer">❤️</span><span class="cursor-pointer">✨</span><span class="cursor-pointer">🔥</span>
-          <span class="cursor-pointer">👑</span><span class="cursor-pointer">🌸</span><span class="cursor-pointer">🎀</span>
+        <p class="text-white text-xs mb-2 uppercase tracking-widest font-semibold">2. เลือกกรอบ Canva</p>
+        <div id="frameSelect" class="flex gap-2 mb-4 overflow-x-auto p-1">
+            <button class="frame-btn px-3 py-1 rounded-lg bg-pink-500 text-white text-xs" data-frame="">สีพื้นปกติ</button>
+            <button class="frame-btn px-3 py-1 rounded-lg bg-white/20 text-white text-xs" data-frame="myframe.png">กรอบ มจธ. 3 ช่อง</button>
         </div>
 
         <div class="flex justify-center mb-6">
-          <div id="captureArea" class="relative p-3 rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 shadow-2xl transition-all overflow-hidden">
+          <div id="captureArea" class="relative p-3 rounded-sm bg-gradient-to-br from-red-600 to-orange-500 shadow-2xl overflow-hidden">
             <div id="frameOverlay"></div>
-            
-            <div id="templateContent" class="relative bg-white p-2 rounded-lg grid gap-2 z-10"></div>
-            <p class="text-[10px] text-center text-white mt-2 font-bold tracking-widest z-30 relative"></p>
+            <div id="templateContent" class="relative bg-white p-2 grid gap-2 z-10"></div>
+            <p class="text-[10px] text-center text-white mt-2 font-bold z-30 relative uppercase">KMUTT BLOOD DONATION</p>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-          <button id="resetBtn" class="py-3 bg-red-500/50 text-white rounded-xl text-sm font-bold">🔄 รีเซ็ต</button>
-          <button id="printBtn" class="py-3 bg-blue-500 text-white rounded-xl text-sm font-bold">🖨️ สั่งปริ้น</button>
-          <button id="downloadBtn" class="col-span-2 py-3 bg-green-500 text-white rounded-xl text-sm font-bold shadow-lg">💾 ดาวน์โหลด (รวมกรอบ & สติกเกอร์)</button>
+          <button id="resetBtn" class="py-3 bg-white/10 text-white rounded-xl text-sm border border-white/20">🔄 เริ่มใหม่</button>
+          <button id="printBtn" class="py-3 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg">🖨️ ปริ้นรูป</button>
+          <button id="downloadBtn" class="col-span-2 py-4 bg-orange-500 text-white rounded-xl text-md font-bold shadow-xl">💾 ดาวน์โหลดรูปภาพ</button>
         </div>
       </div>
     </div>
@@ -96,22 +84,37 @@
     let photos = [];
     let currentFilter = 'none';
     let currentFacingMode = 'user';
-    let stream = null;
-    let currentTemplate = 'strip4';
+    let currentTemplate = 'strip3'; // ตั้งค่าเริ่มต้นให้เป็น 3 ช่องตามกรอบ มจธ.
     let selectedFrameImg = null;
 
     const templates = {
-      strip4: { slots: 4, cols: 1, width: '160px' },
-      grid4: { slots: 4, cols: 2, width: '240px' }
+      strip3: { slots: 3, cols: 1, width: '180px', name: '3 ช่อง (มจธ.)', gap: 'gap-3', padding: 'p-3' },
+      strip4: { slots: 4, cols: 1, width: '160px', name: '4 ช่อง (ยาว)', gap: 'gap-2', padding: 'p-2' },
+      grid4: { slots: 4, cols: 2, width: '250px', name: '4 ช่อง (จตุรัส)', gap: 'gap-2', padding: 'p-2' }
     };
 
-    // จัดการเลือกกรอบ Canva
+    // สร้างปุ่มเทมเพลต
+    const tSelect = document.getElementById('templateSelect');
+    Object.keys(templates).forEach(key => {
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-1 rounded-lg text-xs whitespace-nowrap ${currentTemplate === key ? 'bg-pink-500 text-white' : 'bg-white/20 text-white'}`;
+        btn.textContent = templates[key].name;
+        btn.onclick = () => {
+            currentTemplate = key;
+            document.querySelectorAll('#templateSelect button').forEach(b => b.classList.replace('bg-pink-500', 'bg-white/20'));
+            btn.classList.replace('bg-white/20', 'bg-pink-500');
+            renderTemplate();
+        };
+        tSelect.appendChild(btn);
+    });
+
+    // เลือกกรอบ Canva
     document.querySelectorAll('.frame-btn').forEach(btn => {
         btn.onclick = () => {
             const frameUrl = btn.dataset.frame;
             const overlay = document.getElementById('frameOverlay');
-            document.querySelectorAll('.frame-btn').forEach(b => b.className = b.className.replace('bg-pink-500', 'bg-white/20'));
-            btn.className = btn.className.replace('bg-white/20', 'bg-pink-500');
+            document.querySelectorAll('.frame-btn').forEach(b => b.classList.replace('bg-pink-500', 'bg-white/20'));
+            btn.classList.replace('bg-white/20', 'bg-pink-500');
 
             if(frameUrl) {
                 overlay.style.backgroundImage = `url(${frameUrl})`;
@@ -125,15 +128,14 @@
     });
 
     async function initCamera() {
-      if (stream) stream.getTracks().forEach(t => t.stop());
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: false });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: false });
         document.getElementById('camera').srcObject = stream;
-      } catch (err) { alert("Error: ไม่สามารถเข้าถึงกล้องได้"); }
+      } catch (err) { alert("กรุณาอนุญาตการเข้าถึงกล้องครับ"); }
     }
 
     document.getElementById('captureBtn').onclick = () => {
-      if (photos.length >= templates[currentTemplate].slots) return alert("เต็มแล้ว!");
+      if (photos.length >= templates[currentTemplate].slots) return alert("เต็มแล้วครับ! กดเริ่มใหม่เพื่อถ่ายอีกครั้ง");
       let count = 3;
       const overlay = document.getElementById('countdown');
       overlay.classList.remove('hidden');
@@ -156,54 +158,24 @@
       ctx.drawImage(video, 0, 0);
       photos.push(canvas.toDataURL('image/jpeg'));
       renderTemplate();
-      video.parentElement.classList.add('flash-effect');
-      setTimeout(() => video.parentElement.classList.remove('flash-effect'), 300);
     }
 
     function renderTemplate() {
       const container = document.getElementById('templateContent');
       const config = templates[currentTemplate];
       document.getElementById('captureArea').style.width = config.width;
-      container.className = `bg-white p-2 rounded-lg grid gap-2 grid-cols-${config.cols} relative z-10`;
+      container.className = `relative bg-white ${config.padding} rounded-sm grid ${config.gap} grid-cols-${config.cols} z-10`;
       container.innerHTML = '';
       for (let i = 0; i < config.slots; i++) {
         const div = document.createElement('div');
-        div.className = 'photo-slot aspect-[4/3] rounded shadow-inner flex items-center justify-center text-gray-500 text-xs';
+        div.className = 'photo-slot aspect-[4/3] flex items-center justify-center text-gray-400 text-[10px]';
         if (photos[i]) div.innerHTML = `<img src="${photos[i]}" class="w-full h-full object-cover">`;
-        else div.textContent = i + 1;
+        else div.textContent = `PHOTO ${i + 1}`;
         container.appendChild(div);
       }
     }
 
-    // สติกเกอร์
-    document.querySelectorAll('#stickerTray span').forEach(opt => {
-      opt.onclick = () => {
-        const s = document.createElement('div');
-        s.className = 'sticker-item';
-        s.innerHTML = opt.innerHTML;
-        s.style.left = '40%'; s.style.top = '40%';
-        makeDraggable(s);
-        document.getElementById('captureArea').appendChild(s);
-      };
-    });
-
-    function makeDraggable(el) {
-      let p1, p2, p3, p4;
-      el.onmousedown = el.ontouchstart = (e) => {
-        const ev = e.type === 'touchstart' ? e.touches[0] : e;
-        p3 = ev.clientX; p4 = ev.clientY;
-        document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; };
-        document.onmousemove = document.ontouchmove = (e2) => {
-          const ev2 = e2.type === 'touchmove' ? e2.touches[0] : e2;
-          p1 = p3 - ev2.clientX; p2 = p4 - ev2.clientY;
-          p3 = ev2.clientX; p4 = ev2.clientY;
-          el.style.top = (el.offsetTop - p2) + "px";
-          el.style.left = (el.offsetLeft - p1) + "px";
-        };
-      };
-    }
-
-    // ดาวน์โหลด (รวมเลเยอร์ Canva)
+    // ฟังก์ชันดาวน์โหลดเป๊ะๆ
     document.getElementById('downloadBtn').onclick = async () => {
         if (photos.length === 0) return alert("ถ่ายรูปก่อนนะครับ");
         const area = document.getElementById('captureArea');
@@ -211,54 +183,53 @@
         const ctx = canvas.getContext('2d');
         const scale = 2;
         const rect = area.getBoundingClientRect();
-        canvas.width = rect.width * scale; canvas.height = rect.height * scale;
+        
+        canvas.width = rect.width * scale;
+        canvas.height = rect.height * scale;
         ctx.scale(scale, scale);
 
-        // 1. วาดพื้นหลัง Gradient
+        // 1. วาดพื้นหลัง
         const grad = ctx.createLinearGradient(0, 0, 0, rect.height);
-        grad.addColorStop(0, '#f472b6'); grad.addColorStop(1, '#a855f7');
-        ctx.fillStyle = grad; ctx.fillRect(0, 0, rect.width, rect.height);
+        grad.addColorStop(0, '#e11d48'); grad.addColorStop(1, '#f97316');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, rect.width, rect.height);
 
-        // 2. วาดรูปถ่าย (อยู่เลเยอร์หลัง)
+        // 2. วาดแผ่นขาว
         const whitePad = document.getElementById('templateContent');
-        const padRect = whitePad.getBoundingClientRect();
+        const padR = whitePad.getBoundingClientRect();
         ctx.fillStyle = "white";
-        ctx.fillRect(padRect.left - rect.left, padRect.top - rect.top, padRect.width, padRect.height);
+        ctx.fillRect(padR.left - rect.left, padR.top - rect.top, padR.width, padR.height);
         
+        // 3. วาดรูปถ่าย (เลเยอร์หลัง)
         const slots = whitePad.querySelectorAll('.photo-slot');
         slots.forEach(slot => {
             const img = slot.querySelector('img');
             if(img) {
-                const sRect = slot.getBoundingClientRect();
-                ctx.drawImage(img, sRect.left - rect.left, sRect.top - rect.top, sRect.width, sRect.height);
+                const sR = slot.getBoundingClientRect();
+                ctx.drawImage(img, sR.left - rect.left, sR.top - rect.top, sR.width, sR.height);
             }
         });
 
-        // 3. วาดกรอบ Canva ทับรูปถ่าย
-        if (selectedFrameImg) {
+        // 4. วาดกรอบ Canva (เลเยอร์หน้า)
+        if (selectedFrameImg && selectedFrameImg.complete) {
             ctx.drawImage(selectedFrameImg, 0, 0, rect.width, rect.height);
         }
 
-        // 4. วาดสติกเกอร์ (อยู่เลเยอร์หน้าสุด)
-        const stickers = area.querySelectorAll('.sticker-item');
-        stickers.forEach(s => {
-            const sR = s.getBoundingClientRect();
-            ctx.font = "40px Arial"; ctx.textBaseline = "top";
-            ctx.fillText(s.innerText, sR.left - rect.left, sR.top - rect.top);
-        });
+        // 5. ข้อความท้าย
+        ctx.fillStyle = "white"; ctx.font = "bold 8px Arial"; ctx.textAlign = "center";
+        ctx.fillText("KMUTT BLOOD DONATION", rect.width/2, rect.height - 12);
 
         const link = document.createElement('a');
-        link.download = `photobooth-${Date.now()}.png`;
-        link.href = canvas.toDataURL(); link.click();
+        link.download = `KMUTT-Booth-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
     };
 
     document.getElementById('printBtn').onclick = () => window.print();
-    document.getElementById('switchCamBtn').onclick = () => { currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user'; initCamera(); };
-    document.getElementById('resetBtn').onclick = () => { if(confirm("ล้างรูปทั้งหมด?")) { photos = []; document.querySelectorAll('.sticker-item').forEach(s => s.remove()); renderTemplate(); } };
+    document.getElementById('resetBtn').onclick = () => { if(confirm("ล้างรูปทั้งหมด?")) { photos = []; renderTemplate(); } };
+    document.querySelectorAll('.filter-btn').forEach(b => b.onclick = () => { currentFilter = b.dataset.filter; document.getElementById('camera').style.filter = currentFilter; });
 
     initCamera(); renderTemplate();
   </script>
 </body>
 </html>
-
-
