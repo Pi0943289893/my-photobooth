@@ -19,11 +19,23 @@
     .countdown-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); font-size: 6rem; color: white; z-index: 100; }
     #camera { transform: scaleX(-1); }
     
-    /* CSS สำหรับการปริ้น */
+    /* แก้ไข CSS สำหรับการปริ้นรูปภาพให้แสดงผล */
     @media print {
       body * { visibility: hidden; }
-      #captureArea, #captureArea * { visibility: visible; }
-      #captureArea { position: absolute; left: 0; top: 0; width: 100%; border:none; }
+      #captureArea, #captureArea * { 
+        visibility: visible !important; 
+        -webkit-print-color-adjust: exact !important; 
+        print-color-adjust: exact !important;
+      }
+      #captureArea { 
+        position: absolute; 
+        left: 50%; 
+        top: 0; 
+        transform: translateX(-50%); 
+        width: auto !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
       .no-print { display: none !important; }
     }
   </style>
@@ -43,7 +55,7 @@
           <div id="countdown" class="countdown-overlay hidden">3</div>
           <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
             <button id="captureBtn" class="btn-capture px-8 py-3 rounded-full text-white font-bold shadow-xl">📸 ถ่ายรูป!</button>
-            <button id="switchCamBtn" class="bg-white/20 p-3 rounded-full text-white">🔄</button>
+            <button id="switchCamBtn" class="bg-white/20 p-3 rounded-full text-white">🔄 สลับกล้อง</button>
           </div>
         </div>
         <div class="mt-4 overflow-x-auto">
@@ -58,10 +70,9 @@
 
       <div class="glass-card rounded-3xl p-4">
         <p class="text-white text-xs mb-2">🎨 เลือกเทมเพลต:</p>
-        <div id="templateSelect" class="flex gap-2 mb-4 overflow-x-auto p-1">
-          </div>
+        <div id="templateSelect" class="flex gap-2 mb-4 overflow-x-auto p-1"></div>
 
-        <p class="text-white text-xs mb-2">🎁 แตะสติกเกอร์เพื่อเพิ่ม:</p>
+        <p class="text-white text-xs mb-2">🎁 แตะสติกเกอร์เพื่อเพิ่ม (ลากวางได้):</p>
         <div id="stickerTray" class="mb-4 bg-black/20 p-2 rounded-xl flex gap-4 overflow-x-auto text-3xl">
           <span class="cursor-pointer">❤️</span><span class="cursor-pointer">✨</span><span class="cursor-pointer">🔥</span>
           <span class="cursor-pointer">👑</span><span class="cursor-pointer">🌸</span><span class="cursor-pointer">🎀</span>
@@ -70,8 +81,7 @@
 
         <div class="flex justify-center mb-6">
           <div id="captureArea" class="relative p-3 rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 shadow-2xl transition-all">
-            <div id="templateContent" class="bg-white p-2 rounded-lg grid gap-2">
-              </div>
+            <div id="templateContent" class="bg-white p-2 rounded-lg grid gap-2"></div>
             <p class="text-[10px] text-center text-white mt-2 font-bold tracking-widest">📸 PHOTOBOOTH STUDIO</p>
           </div>
         </div>
@@ -100,7 +110,6 @@
       single: { slots: 1, cols: 1, width: '220px', name: 'Single' }
     };
 
-    // สร้างปุ่มเลือกเทมเพลตอัตโนมัติ
     const tSelect = document.getElementById('templateSelect');
     Object.keys(templates).forEach(key => {
         const btn = document.createElement('button');
@@ -108,8 +117,8 @@
         btn.textContent = templates[key].name;
         btn.onclick = () => {
             currentTemplate = key;
-            document.querySelectorAll('#templateSelect button').forEach(b => b.classList.replace('bg-pink-500', 'bg-white/20'));
-            btn.classList.replace('bg-white/20', 'bg-pink-500');
+            document.querySelectorAll('#templateSelect button').forEach(b => b.className = b.className.replace('bg-pink-500 text-white', 'bg-white/20 text-white'));
+            btn.className = btn.className.replace('bg-white/20 text-white', 'bg-pink-500 text-white');
             renderTemplate();
         };
         tSelect.appendChild(btn);
@@ -120,7 +129,7 @@
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: false });
         document.getElementById('camera').srcObject = stream;
-      } catch (err) { console.error(err); }
+      } catch (err) { alert("เข้าถึงกล้องไม่ได้ กรุณาอนุญาตสิทธิ์ครับ"); }
     }
 
     document.getElementById('captureBtn').onclick = async () => {
@@ -154,20 +163,18 @@
     function renderTemplate() {
       const container = document.getElementById('templateContent');
       const config = templates[currentTemplate];
-      const area = document.getElementById('captureArea');
-      area.style.width = config.width;
+      document.getElementById('captureArea').style.width = config.width;
       container.className = `bg-white p-2 rounded-lg grid gap-2 grid-cols-${config.cols}`;
       container.innerHTML = '';
       for (let i = 0; i < config.slots; i++) {
         const div = document.createElement('div');
         div.className = 'photo-slot aspect-[4/3] rounded shadow-inner flex items-center justify-center text-gray-500 text-xs';
-        if (photos[i]) div.innerHTML = `<img src="${photos[i]}" class="w-full h-full object-cover">`;
+        if (photos[i]) div.innerHTML = `<img src="${photos[i]}" class="w-full h-full object-cover border-0">`;
         else div.textContent = i + 1;
         container.appendChild(div);
       }
     }
 
-    // สติกเกอร์ระบบลากวาง
     document.querySelectorAll('#stickerTray span').forEach(opt => {
       opt.onclick = () => {
         const s = document.createElement('div');
@@ -182,7 +189,6 @@
     function makeDraggable(el) {
       let p1, p2, p3, p4;
       el.onmousedown = el.ontouchstart = (e) => {
-        e.preventDefault();
         const ev = e.type === 'touchstart' ? e.touches[0] : e;
         p3 = ev.clientX; p4 = ev.clientY;
         document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; };
@@ -196,7 +202,6 @@
       };
     }
 
-    // ฟังก์ชันดาวน์โหลด (Canvas Render)
     document.getElementById('downloadBtn').onclick = async () => {
         if (photos.length === 0) return alert("ถ่ายรูปก่อนนะครับ");
         const area = document.getElementById('captureArea');
@@ -206,32 +211,27 @@
         canvas.width = area.offsetWidth * scale; canvas.height = area.offsetHeight * scale;
         ctx.scale(scale, scale);
 
-        // วาด Background Gradient
         const grad = ctx.createLinearGradient(0, 0, 0, area.offsetHeight);
         grad.addColorStop(0, '#f472b6'); grad.addColorStop(1, '#a855f7');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, area.offsetWidth, area.offsetHeight);
 
-        // วาดส่วนสีขาว
         const whitePad = document.getElementById('templateContent');
         ctx.fillStyle = "white";
         ctx.fillRect(whitePad.offsetLeft, whitePad.offsetTop, whitePad.offsetWidth, whitePad.offsetHeight);
 
-        // วาดรูปภาพ
         const images = area.querySelectorAll('img');
         for(let img of images) {
             const rect = img.parentElement;
             ctx.drawImage(img, rect.offsetLeft + whitePad.offsetLeft, rect.offsetTop + whitePad.offsetTop, img.offsetWidth, img.offsetHeight);
         }
 
-        // วาดสติกเกอร์
         const stickers = area.querySelectorAll('.sticker-item');
         stickers.forEach(s => {
             ctx.font = "40px Arial"; ctx.textBaseline = "top";
             ctx.fillText(s.innerText, s.offsetLeft, s.offsetTop);
         });
         
-        // วาด Text ท้ายรูป
         ctx.fillStyle = "white"; ctx.font = "bold 10px Arial"; ctx.textAlign = "center";
         ctx.fillText("📸 PHOTOBOOTH STUDIO", area.offsetWidth/2, area.offsetHeight - 15);
 
@@ -260,7 +260,7 @@
     };
 
     document.getElementById('resetBtn').onclick = () => {
-      if(confirm("ต้องการล้างรูปทั้งหมดใช่ไหม?")) {
+      if(confirm("ล้างรูปทั้งหมดใช่ไหม?")) {
         photos = []; document.querySelectorAll('.sticker-item').forEach(s => s.remove());
         renderTemplate();
       }
