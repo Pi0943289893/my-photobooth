@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Photobooth Pro - Final Fix</title>
+  <title>Photobooth Pro - Canva Edition</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Noto+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
   <style>
@@ -12,24 +12,23 @@
     .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); }
     .btn-capture { background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3); background-size: 300% 300%; animation: gradient-shift 3s ease infinite; }
     @keyframes gradient-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    .photo-slot { background: #1a1a2e; border: 2px dashed rgba(255, 255, 255, 0.3); overflow: hidden; position: relative; }
+    .photo-slot { background: #1a1a2e; overflow: hidden; position: relative; z-index: 5; }
     .sticker-item { position: absolute; cursor: move; touch-action: none; user-select: none; z-index: 50; font-size: 2.5rem; line-height: 1; }
     .flash-effect { animation: flash 0.3s ease-out; }
     @keyframes flash { 0% { background: white; } 100% { background: transparent; } }
     .countdown-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); font-size: 6rem; color: white; z-index: 100; }
     #camera { transform: scaleX(-1); }
     
+    /* เลเยอร์ของกรอบ Canva */
+    #frameOverlay {
+        position: absolute; inset: 0; pointer-events: none; z-index: 20;
+        background-size: 100% 100%; background-repeat: no-repeat;
+    }
+
     @media print {
       body * { visibility: hidden; }
-      #captureArea, #captureArea * { 
-        visibility: visible !important; 
-        -webkit-print-color-adjust: exact !important; 
-        print-color-adjust: exact !important;
-      }
-      #captureArea { 
-        position: absolute; left: 50%; top: 0; transform: translateX(-50%); 
-        width: auto !important; border: none !important; box-shadow: none !important; 
-      }
+      #captureArea, #captureArea * { visibility: visible !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      #captureArea { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: auto !important; border: none !important; }
       .no-print { display: none !important; }
     }
   </style>
@@ -38,7 +37,7 @@
   <div class="min-h-full p-4 no-print">
     <header class="text-center mb-6">
       <h1 class="text-3xl font-bold text-white drop-shadow-lg">✨ Photobooth Studio ✨</h1>
-      <p class="text-white/80 text-sm">ถ่ายภาพ • แต่งสติกเกอร์ • ปริ้น & ดาวน์โหลด</p>
+      <p class="text-white/80 text-sm">ออกแบบกรอบจาก Canva แล้วมาถ่ายรูปกัน!</p>
     </header>
 
     <div class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-6">
@@ -63,27 +62,31 @@
       </div>
 
       <div class="glass-card rounded-3xl p-4">
-        <p class="text-white text-xs mb-2">🎨 เลือกเทมเพลต:</p>
-        <div id="templateSelect" class="flex gap-2 mb-4 overflow-x-auto p-1"></div>
+        <p class="text-white text-xs mb-2">🖼️ เลือกกรอบ Canva:</p>
+        <div id="frameSelect" class="flex gap-2 mb-4 overflow-x-auto p-1">
+            <button class="frame-btn px-3 py-1 rounded-lg bg-pink-500 text-white text-xs whitespace-nowrap" data-frame="">สีพื้นปกติ</button>
+            <button class="frame-btn px-3 py-1 rounded-lg bg-white/20 text-white text-xs whitespace-nowrap" data-frame="myframe.png">กรอบ Canva 1</button>
+        </div>
 
-        <p class="text-white text-xs mb-2">🎁 แตะสติกเกอร์:</p>
+        <p class="text-white text-xs mb-2">🎁 สติกเกอร์:</p>
         <div id="stickerTray" class="mb-4 bg-black/20 p-2 rounded-xl flex gap-4 overflow-x-auto text-3xl">
           <span class="cursor-pointer">❤️</span><span class="cursor-pointer">✨</span><span class="cursor-pointer">🔥</span>
           <span class="cursor-pointer">👑</span><span class="cursor-pointer">🌸</span><span class="cursor-pointer">🎀</span>
-          <span class="cursor-pointer">⭐</span><span class="cursor-pointer">🍦</span><span class="cursor-pointer">🍀</span>
         </div>
 
         <div class="flex justify-center mb-6">
-          <div id="captureArea" class="relative p-3 rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 shadow-2xl transition-all">
-            <div id="templateContent" class="bg-white p-2 rounded-lg grid gap-2"></div>
-            <p class="text-[10px] text-center text-white mt-2 font-bold tracking-widest">📸 PHOTOBOOTH STUDIO</p>
+          <div id="captureArea" class="relative p-3 rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 shadow-2xl transition-all overflow-hidden">
+            <div id="frameOverlay"></div>
+            
+            <div id="templateContent" class="relative bg-white p-2 rounded-lg grid gap-2 z-10"></div>
+            <p class="text-[10px] text-center text-white mt-2 font-bold tracking-widest z-30 relative">📸 PHOTOBOOTH STUDIO</p>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <button id="resetBtn" class="py-3 bg-red-500/50 text-white rounded-xl text-sm font-bold">🔄 รีเซ็ต</button>
-          <button id="printBtn" class="py-3 bg-blue-500 text-white rounded-xl text-sm font-bold">🖨️ ปริ้นรูป</button>
-          <button id="downloadBtn" class="col-span-2 py-3 bg-green-500 text-white rounded-xl text-sm font-bold shadow-lg">💾 ดาวน์โหลดรูปภาพ</button>
+          <button id="printBtn" class="py-3 bg-blue-500 text-white rounded-xl text-sm font-bold">🖨️ สั่งปริ้น</button>
+          <button id="downloadBtn" class="col-span-2 py-3 bg-green-500 text-white rounded-xl text-sm font-bold shadow-lg">💾 ดาวน์โหลด (รวมกรอบ & สติกเกอร์)</button>
         </div>
       </div>
     </div>
@@ -95,29 +98,30 @@
     let currentFacingMode = 'user';
     let stream = null;
     let currentTemplate = 'strip4';
+    let selectedFrameImg = null;
 
     const templates = {
-      strip4: { slots: 4, cols: 1, width: '160px', name: 'Strip 4' },
-      strip3: { slots: 3, cols: 1, width: '160px', name: 'Strip 3' },
-      grid4: { slots: 4, cols: 2, width: '240px', name: 'Grid 4' },
-      duo: { slots: 2, cols: 1, width: '180px', name: 'Duo 2' },
-      single: { slots: 1, cols: 1, width: '220px', name: 'Single' }
+      strip4: { slots: 4, cols: 1, width: '160px' },
+      grid4: { slots: 4, cols: 2, width: '240px' }
     };
 
-    const tSelect = document.getElementById('templateSelect');
-    Object.keys(templates).forEach(key => {
-        const btn = document.createElement('button');
-        btn.className = `px-3 py-1 rounded-lg text-xs whitespace-nowrap ${currentTemplate === key ? 'bg-pink-500 text-white' : 'bg-white/20 text-white'}`;
-        btn.textContent = templates[key].name;
+    // จัดการเลือกกรอบ Canva
+    document.querySelectorAll('.frame-btn').forEach(btn => {
         btn.onclick = () => {
-            currentTemplate = key;
-            document.querySelectorAll('#templateSelect button').forEach(b => {
-              b.className = b.className.replace('bg-pink-500 text-white', 'bg-white/20 text-white');
-            });
-            btn.className = btn.className.replace('bg-white/20 text-white', 'bg-pink-500 text-white');
-            renderTemplate();
+            const frameUrl = btn.dataset.frame;
+            const overlay = document.getElementById('frameOverlay');
+            document.querySelectorAll('.frame-btn').forEach(b => b.className = b.className.replace('bg-pink-500', 'bg-white/20'));
+            btn.className = btn.className.replace('bg-white/20', 'bg-pink-500');
+
+            if(frameUrl) {
+                overlay.style.backgroundImage = `url(${frameUrl})`;
+                selectedFrameImg = new Image();
+                selectedFrameImg.src = frameUrl;
+            } else {
+                overlay.style.backgroundImage = 'none';
+                selectedFrameImg = null;
+            }
         };
-        tSelect.appendChild(btn);
     });
 
     async function initCamera() {
@@ -125,10 +129,10 @@
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: false });
         document.getElementById('camera').srcObject = stream;
-      } catch (err) { console.error(err); }
+      } catch (err) { alert("Error: ไม่สามารถเข้าถึงกล้องได้"); }
     }
 
-    document.getElementById('captureBtn').onclick = async () => {
+    document.getElementById('captureBtn').onclick = () => {
       if (photos.length >= templates[currentTemplate].slots) return alert("เต็มแล้ว!");
       let count = 3;
       const overlay = document.getElementById('countdown');
@@ -160,17 +164,18 @@
       const container = document.getElementById('templateContent');
       const config = templates[currentTemplate];
       document.getElementById('captureArea').style.width = config.width;
-      container.className = `bg-white p-2 rounded-lg grid gap-2 grid-cols-${config.cols}`;
+      container.className = `bg-white p-2 rounded-lg grid gap-2 grid-cols-${config.cols} relative z-10`;
       container.innerHTML = '';
       for (let i = 0; i < config.slots; i++) {
         const div = document.createElement('div');
         div.className = 'photo-slot aspect-[4/3] rounded shadow-inner flex items-center justify-center text-gray-500 text-xs';
-        if (photos[i]) div.innerHTML = `<img src="${photos[i]}" class="w-full h-full object-cover border-0">`;
+        if (photos[i]) div.innerHTML = `<img src="${photos[i]}" class="w-full h-full object-cover">`;
         else div.textContent = i + 1;
         container.appendChild(div);
       }
     }
 
+    // สติกเกอร์
     document.querySelectorAll('#stickerTray span').forEach(opt => {
       opt.onclick = () => {
         const s = document.createElement('div');
@@ -198,84 +203,58 @@
       };
     }
 
+    // ดาวน์โหลด (รวมเลเยอร์ Canva)
     document.getElementById('downloadBtn').onclick = async () => {
         if (photos.length === 0) return alert("ถ่ายรูปก่อนนะครับ");
         const area = document.getElementById('captureArea');
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const scale = 2;
-        
-        // ใช้ getBoundingClientRect เพื่อความแม่นยำสูงสุด
-        const areaRect = area.getBoundingClientRect();
-        canvas.width = areaRect.width * scale;
-        canvas.height = areaRect.height * scale;
+        const rect = area.getBoundingClientRect();
+        canvas.width = rect.width * scale; canvas.height = rect.height * scale;
         ctx.scale(scale, scale);
 
-        // 1. วาดสีกรอบ (Gradient)
-        const grad = ctx.createLinearGradient(0, 0, 0, areaRect.height);
+        // 1. วาดพื้นหลัง Gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, rect.height);
         grad.addColorStop(0, '#f472b6'); grad.addColorStop(1, '#a855f7');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, areaRect.width, areaRect.height);
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, rect.width, rect.height);
 
-        // 2. วาดพื้นสีขาวของ Template
+        // 2. วาดรูปถ่าย (อยู่เลเยอร์หลัง)
         const whitePad = document.getElementById('templateContent');
         const padRect = whitePad.getBoundingClientRect();
         ctx.fillStyle = "white";
-        ctx.fillRect(padRect.left - areaRect.left, padRect.top - areaRect.top, padRect.width, padRect.height);
-
-        // 3. วาดรูปถ่ายทีละใบ (ดึงตำแหน่งจากหน้าจอจริง)
+        ctx.fillRect(padRect.left - rect.left, padRect.top - rect.top, padRect.width, padRect.height);
+        
         const slots = whitePad.querySelectorAll('.photo-slot');
-        slots.forEach((slot) => {
+        slots.forEach(slot => {
             const img = slot.querySelector('img');
-            if (img) {
-                const slotRect = slot.getBoundingClientRect();
-                ctx.drawImage(img, slotRect.left - areaRect.left, slotRect.top - areaRect.top, slotRect.width, slotRect.height);
+            if(img) {
+                const sRect = slot.getBoundingClientRect();
+                ctx.drawImage(img, sRect.left - rect.left, sRect.top - rect.top, sRect.width, sRect.height);
             }
         });
 
-        // 4. วาดสติกเกอร์
+        // 3. วาดกรอบ Canva ทับรูปถ่าย
+        if (selectedFrameImg) {
+            ctx.drawImage(selectedFrameImg, 0, 0, rect.width, rect.height);
+        }
+
+        // 4. วาดสติกเกอร์ (อยู่เลเยอร์หน้าสุด)
         const stickers = area.querySelectorAll('.sticker-item');
         stickers.forEach(s => {
-            const sRect = s.getBoundingClientRect();
+            const sR = s.getBoundingClientRect();
             ctx.font = "40px Arial"; ctx.textBaseline = "top";
-            ctx.fillText(s.innerText, sRect.left - areaRect.left, sRect.top - areaRect.top);
+            ctx.fillText(s.innerText, sR.left - rect.left, sR.top - rect.top);
         });
-        
-        // 5. วาด Watermark
-        ctx.fillStyle = "white"; ctx.font = "bold 10px Arial"; ctx.textAlign = "center";
-        ctx.fillText("📸 PHOTOBOOTH STUDIO", areaRect.width/2, areaRect.height - 15);
 
         const link = document.createElement('a');
         link.download = `photobooth-${Date.now()}.png`;
         link.href = canvas.toDataURL(); link.click();
     };
 
-    document.getElementById('printBtn').onclick = () => {
-        if (photos.length === 0) return alert("ถ่ายรูปก่อนนะครับ");
-        window.print();
-    };
-
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.onclick = () => {
-        currentFilter = btn.dataset.filter;
-        document.getElementById('camera').style.filter = currentFilter;
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('bg-pink-500'));
-        btn.classList.add('bg-pink-500');
-      };
-    });
-
-    document.getElementById('switchCamBtn').onclick = () => {
-      currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-      initCamera();
-    };
-
-    document.getElementById('resetBtn').onclick = () => {
-      if(confirm("ล้างรูปทั้งหมดใช่ไหม?")) {
-        photos = []; 
-        document.querySelectorAll('.sticker-item').forEach(s => s.remove());
-        renderTemplate();
-      }
-    };
+    document.getElementById('printBtn').onclick = () => window.print();
+    document.getElementById('switchCamBtn').onclick = () => { currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user'; initCamera(); };
+    document.getElementById('resetBtn').onclick = () => { if(confirm("ล้างรูปทั้งหมด?")) { photos = []; document.querySelectorAll('.sticker-item').forEach(s => s.remove()); renderTemplate(); } };
 
     initCamera(); renderTemplate();
   </script>
