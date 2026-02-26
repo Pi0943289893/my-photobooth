@@ -3,44 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth - Perfect UI</title>
+  <title>KMUTT Photobooth - 4 Frames Edition</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Noto Sans Thai', sans-serif; touch-action: manipulation; }
     .gradient-bg { background: #b91c1c; } 
     
-    /* ปรับขนาดพื้นที่พรีวิวให้ดูสวยงามและไม่ยาวเกินไป */
     #captureArea { 
-      width: 210px; height: 570px; position: relative; background: #fff; overflow: hidden; 
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: all 0.3s ease; margin: auto;
+      width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6); transition: all 0.3s ease; margin: auto; z-index: 1;
     }
     
-    /* พรีวิวสำหรับ 4x6 */
     #captureArea.landscape { width: 340px; height: 226px; }
 
+    /* กรอบรูปอยู่ Layer บนสุด (z-index: 50) */
     #frameOverlay { 
       position: absolute; inset: 0; z-index: 50; background-size: 100% 100%; background-repeat: no-repeat; pointer-events: none; 
     }
     
+    /* รูปถ่ายอยู่ Layer ล่าง (z-index: 10) */
     .photo-item { 
-      position: absolute; z-index: 10; background: #eee; border: 3px solid #fff; overflow: hidden; display: flex; align-items: center; justify-content: center;
+      position: absolute; z-index: 10; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
 
-    /* พิกัดรูปถ่ายสำหรับ 2x6 (Strip) */
-    .photo-1 { left: 14px; width: 182px; height: 134px; top: 106px; }
-    .photo-2 { left: 14px; width: 182px; height: 134px; top: 255px; }
-    .photo-3 { left: 14px; width: 182px; height: 134px; top: 404px; }
+    /* ตำแหน่ง 2x6 */
+    .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
+    .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
+    .photo-3 { left: 15px; width: 190px; height: 140px; top: 424px; }
     
-    /* พิกัดรูปถ่ายสำหรับ 4x6 (Wish Note - รูปเดียวฝั่งซ้าย) */
-    .note-layout .photo-1 { left: 15px; width: 155px; height: 190px; top: 18px; }
+    /* ตำแหน่ง 4x6 Wish Note */
+    .note-layout .photo-1 { left: 10px; width: 165px; height: 200px; top: 13px; }
     .note-layout .photo-2, .note-layout .photo-3 { display: none; }
 
     .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
     .mirror { transform: scaleX(-1); }
     #camera { border-radius: 1rem; width: 100%; background: #000; aspect-ratio: 4/3; object-fit: cover; }
 
-    /* ปุ่มเลือกกรอบ */
     .frame-thumb { width: 55px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; border-radius: 6px; background: #fff; }
     .frame-thumb.active { border-color: #fff; transform: scale(1.1); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
   </style>
@@ -50,14 +49,14 @@
   
   <header class="text-center mb-6 text-white">
     <h1 class="text-2xl font-bold italic drop-shadow-lg">KMUTT BLOOD DONATION</h1>
-    <p class="text-xs opacity-90">เลือกรูปแบบกรอบที่ต้องการ</p>
+    <p class="text-xs opacity-90">เลือกกรอบรูปทั้งหมด 4 รูปแบบ</p>
   </header>
 
   <div class="max-w-6xl w-full grid lg:grid-cols-3 gap-6 items-start">
     
     <div class="glass-card rounded-3xl p-5 text-center lg:col-span-1">
       <h2 class="text-white text-sm font-bold mb-4 uppercase">🎨 Select Frame</h2>
-      <div class="flex lg:flex-col flex-row justify-center gap-4 overflow-x-auto p-1">
+      <div class="grid grid-cols-2 lg:grid-cols-1 gap-4 justify-items-center overflow-x-auto p-1">
         <div class="flex flex-col items-center gap-1">
           <img src="myframe.png" class="frame-thumb active h-[100px]" onclick="changeFrame('myframe.png', '2x6', false, this)">
           <span class="text-white text-[9px]">Classic Red</span>
@@ -67,8 +66,12 @@
           <span class="text-white text-[9px]">Frame 1</span>
         </div>
         <div class="flex flex-col items-center gap-1">
-          <img src="frame_4x6_note.png" class="frame-thumb h-[50px] w-[75px] mt-6" onclick="changeFrame('frame_4x6_note.png', '4x6', true, this)">
-          <span class="text-white text-[9px] font-bold uppercase">Wish Note</span>
+          <img src="frame2.png" class="frame-thumb h-[100px]" onclick="changeFrame('frame2.png', '2x6', false, this)">
+          <span class="text-white text-[9px]">Frame 2</span>
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          <img src="frame_4x6_note.png" class="frame-thumb h-[50px] w-[75px] mt-4" onclick="changeFrame('frame_4x6_note.png', '4x6', true, this)">
+          <span class="text-white text-[9px] font-bold">WISH NOTE (4x6)</span>
         </div>
       </div>
     </div>
@@ -80,7 +83,7 @@
       </div>
       <div class="flex gap-2">
         <button id="switchBtn" class="px-5 py-3 bg-gray-800 text-white rounded-xl">🔄</button>
-        <button id="captureBtn" class="flex-1 py-3 bg-white text-red-600 rounded-xl font-bold text-lg active:scale-95 transition-all">📸 กดถ่ายรูป</button>
+        <button id="captureBtn" class="flex-1 py-3 bg-white text-red-600 rounded-xl font-bold text-lg active:scale-95">📸 ถ่ายรูป</button>
       </div>
     </div>
 
@@ -92,7 +95,7 @@
         <div id="photo3" class="photo-item photo-3"></div>
       </div>
       <div class="w-full mt-6 grid grid-cols-2 gap-3">
-        <button id="resetBtn" class="py-2.5 bg-black/40 text-white rounded-xl text-xs font-bold">🔄 ล้างรูป</button>
+        <button id="resetBtn" class="py-2.5 bg-black/40 text-white rounded-xl text-xs font-bold">🔄 ถ่ายใหม่</button>
         <button id="downloadBtn" class="py-2.5 bg-green-600 text-white rounded-xl font-bold text-xs shadow-lg">💾 บันทึกรูป</button>
       </div>
     </div>
@@ -114,7 +117,7 @@
     async function startCamera() {
       if (stream) stream.getTracks().forEach(track => track.stop());
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode, width: 800, height: 600 }, audio: false });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode, width: 1280, height: 720 }, audio: false });
         document.getElementById('camera').srcObject = stream;
       } catch (e) { alert("Error: ไม่สามารถเปิดกล้องได้"); }
     }
@@ -146,7 +149,7 @@
 
     document.getElementById('captureBtn').onclick = () => {
       const maxPhotos = isNoteMode ? 1 : 3;
-      if (photos.length >= maxPhotos) return alert(`เต็มแล้ว! ถ่ายได้ ${maxPhotos} รูปครับ`);
+      if (photos.length >= maxPhotos) return alert("ครบจำนวนรูปแล้วครับ");
       
       let count = 3;
       const el = document.getElementById('countdown');
@@ -174,7 +177,7 @@
 
     document.getElementById('downloadBtn').onclick = () => {
       const maxPhotos = isNoteMode ? 1 : 3;
-      if(photos.length < maxPhotos) return alert("ถ่ายไม่ครบครับ");
+      if(photos.length < maxPhotos) return alert("ยังถ่ายไม่ครบครับ");
       
       const finalCanvas = document.createElement('canvas');
       const fctx = finalCanvas.getContext('2d');
@@ -182,26 +185,29 @@
       if (currentSize === '4x6') {
         finalCanvas.width = 1800; finalCanvas.height = 1200;
         fctx.fillStyle = "#ffffff"; fctx.fillRect(0, 0, 1800, 1200);
-        if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, 1800, 1200);
         
         if (isNoteMode) {
           const img = new Image(); img.src = photos[0];
-          // พิกัดดาวน์โหลดสำหรับ Wish Note ให้ตรงกับช่อง (100, 100)
-          fctx.drawImage(img, 102, 102, 796, 996); 
+          fctx.drawImage(img, 65, 65, 875, 1070); // พิกัดสำหรับรูปเดียวใน 4x6
         }
+        
+        if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, 1800, 1200);
+
       } else {
         finalCanvas.width = 600; finalCanvas.height = 1800;
         fctx.fillStyle = "#ffffff"; fctx.fillRect(0, 0, 600, 1800);
-        if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, 600, 1800);
+        
         const positionsY = [336, 804, 1272]; 
         photos.forEach((p, i) => {
           const img = new Image(); img.src = p;
           fctx.drawImage(img, 41, positionsY[i], 518, 382);
         });
+        
+        if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, 600, 1800);
       }
 
       const link = document.createElement('a');
-      link.download = `KMUTT-Photobooth-${Date.now()}.png`;
+      link.download = `KMUTT-Photo-${Date.now()}.png`;
       link.href = finalCanvas.toDataURL('image/png', 1.0);
       link.click();
     };
