@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth - Pro Final</title>
+  <title>KMUTT Photobooth - Layer Fix V23</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -11,27 +11,28 @@
     .gradient-bg { background: #b91c1c; } 
     #captureArea { width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.6); margin: auto; z-index: 1; }
     #captureArea.landscape { width: 340px; height: 226px; }
-    #frameOverlay { position: absolute; inset: 0; z-index: 50; background-size: 100% 100%; background-repeat: no-repeat; pointer-events: none; }
+    /* เลเยอร์กรอบต้องอยู่หน้าสุดเสมอ */
+    #frameOverlay { position: absolute; inset: 0; z-index: 100; background-size: 100% 100%; background-repeat: no-repeat; pointer-events: none; }
+    /* เลเยอร์รูปถ่ายอยู่ข้างหลังกรอบ */
     .photo-item { position: absolute; z-index: 10; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
     .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
     .photo-3 { left: 15px; width: 190px; height: 140px; top: 424px; }
-    .note-layout .photo-1 { left: 15px; width: 155px; height: 195px; top: 15px; }
+    .note-layout .photo-1 { left: 15px; width: 165px; height: 195px; top: 15px; }
     .note-layout .photo-2, .note-layout .photo-3 { display: none; }
     .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
     .mirror { transform: scaleX(-1); }
     #camera { border-radius: 1rem; width: 100%; background: #000; aspect-ratio: 4/3; object-fit: cover; }
-    .frame-thumb { width: 55px; border: 2px solid transparent; cursor: pointer; border-radius: 6px; background: #fff; }
+    .frame-thumb { width: 55px; border: 2px solid transparent; cursor: pointer; border-radius: 6px; background: #fff; transition: 0.2s; }
     .frame-thumb.active { border-color: #fff; transform: scale(1.1); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
   </style>
 </head>
 <body class="h-full gradient-bg p-4 flex flex-col items-center">
-  <header class="text-center mb-6 text-white">
-    <h1 class="text-2xl font-bold italic drop-shadow-lg uppercase">KMUTT Photobooth</h1>
-  </header>
+  <div id="flashOverlay" class="fixed inset-0 z-[200] pointer-events-none"></div>
+  <header class="text-center mb-6 text-white"><h1 class="text-2xl font-bold italic uppercase drop-shadow-md">KMUTT Photobooth</h1></header>
   <div class="max-w-6xl w-full grid lg:grid-cols-3 gap-6 items-start">
     <div class="glass-card rounded-3xl p-5 text-center">
-      <h2 class="text-white text-sm font-bold mb-4 uppercase">🎨 Select Frame</h2>
+      <h2 class="text-white text-sm font-bold mb-4">🎨 SELECT FRAME</h2>
       <div class="grid grid-cols-2 lg:grid-cols-1 gap-4 justify-items-center">
         <img src="myframe.png" class="frame-thumb active h-[100px]" onclick="changeFrame('myframe.png', '2x6', false, this)">
         <img src="frame1.png" class="frame-thumb h-[100px]" onclick="changeFrame('frame1.png', '2x6', false, this)">
@@ -51,14 +52,14 @@
     </div>
     <div class="glass-card rounded-3xl p-5 flex flex-col items-center">
       <div id="captureArea">
-        <div id="frameOverlay" style="background-image: url('myframe.png');"></div>
         <div id="photo1" class="photo-item photo-1"></div>
         <div id="photo2" class="photo-item photo-2"></div>
         <div id="photo3" class="photo-item photo-3"></div>
+        <div id="frameOverlay" style="background-image: url('myframe.png');"></div>
       </div>
       <div class="w-full mt-6 grid grid-cols-2 gap-3">
         <button onclick="resetPhotos()" class="py-2.5 bg-black/40 text-white rounded-xl text-xs font-bold">🔄 ถ่ายใหม่</button>
-        <button id="downloadBtn" class="py-2.5 bg-green-600 text-white rounded-xl font-bold text-xs shadow-lg">💾 บันทึกรูป</button>
+        <button id="downloadBtn" class="py-2.5 bg-green-600 text-white rounded-xl font-bold text-xs shadow-lg uppercase">💾 SAVE PHOTO</button>
       </div>
     </div>
   </div>
@@ -113,24 +114,42 @@
       const data = c.toDataURL('image/jpeg', 0.95);
       photos.push(data);
       document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" class="w-full h-full object-cover">`;
+      const flash = document.getElementById('flashOverlay');
+      flash.classList.add('bg-white'); setTimeout(() => flash.classList.remove('bg-white'), 100);
     }
 
-    document.getElementById('downloadBtn').onclick = () => {
+    document.getElementById('downloadBtn').onclick = async () => {
       if(photos.length < (isNoteMode ? 1 : 3)) return alert("ถ่ายไม่ครบครับ");
       const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+      
+      // ฟังก์ชันวาดรูปพร้อมรอโหลด
+      const drawImg = (src, x, y, w, h) => {
+        return new Promise(resolve => {
+          const img = new Image();
+          img.onload = () => { ctx.drawImage(img, x, y, w, h); resolve(); };
+          img.src = src;
+        });
+      };
+
       if (currentSize === '4x6') {
-        c.width = 1800; c.height = 1200; ctx.fillStyle = "#fff"; ctx.fillRect(0,0,1800,1200);
-        // วาดรูปถ่ายชิดซ้าย (เว้นพื้นที่ขวา)
-        const img = new Image(); img.src = photos[0];
-        ctx.drawImage(img, 85, 85, 850, 1030); // รูปถ่ายฝั่งซ้าย
-        if(frameImg.complete) ctx.drawImage(frameImg, 0, 0, 1800, 1200); // วาดกรอบทับ
+        c.width = 1800; c.height = 1200; 
+        ctx.fillStyle = "#fff"; ctx.fillRect(0,0,1800,1200);
+        // 1. วาดรูปคนก่อน (Layer ล่าง)
+        await drawImg(photos[0], 85, 85, 850, 1030); 
+        // 2. วาดกรอบรูปทับ (Layer บน)
+        await drawImg(currentFrameUrl, 0, 0, 1800, 1200);
       } else {
-        c.width = 600; c.height = 1800; ctx.fillStyle = "#fff"; ctx.fillRect(0,0,600,1800);
+        c.width = 600; c.height = 1800; 
+        ctx.fillStyle = "#fff"; ctx.fillRect(0,0,600,1800);
         const py = [336, 804, 1272];
-        photos.forEach((p, i) => { const img = new Image(); img.src = p; ctx.drawImage(img, 41, py[i], 518, 382); });
-        if(frameImg.complete) ctx.drawImage(frameImg, 0, 0, 600, 1800); // วาดกรอบทับ
+        // 1. วาดรูปคนทั้ง 3 ใบก่อน
+        for(let i=0; i<photos.length; i++) { await drawImg(photos[i], 41, py[i], 518, 382); }
+        // 2. วาดกรอบรูปทับหน้าสุด
+        await drawImg(currentFrameUrl, 0, 0, 600, 1800);
       }
-      const a = document.createElement('a'); a.download = `KMUTT-Photo.png`; a.href = c.toDataURL('image/png', 1.0); a.click();
+      
+      const a = document.createElement('a'); a.download = `KMUTT-Photo.png`; 
+      a.href = c.toDataURL('image/png', 1.0); a.click();
     };
 
     function resetPhotos() { photos = []; [1,2,3].forEach(i => document.getElementById(`photo${i}`).innerHTML = ''); }
