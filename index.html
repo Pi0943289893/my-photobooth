@@ -3,89 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth - Pro Multi-Frame</title>
+  <title>KMUTT Photobooth - Ultimate Multi-Size</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* ตั้งค่าฟอนต์และการป้องกันการซูม */
     * { font-family: 'Noto Sans Thai', sans-serif; touch-action: manipulation; }
     .gradient-bg { background: #b91c1c; } 
     
-    /* พื้นที่แสดงผลพรีวิวบนจอ (ขนาด 220x600 px) */
+    /* พื้นที่แสดงผลพรีวิวบนจอ (แสดงเป็นแนวตั้ง 220x600 เพื่อประหยัดที่) */
     #captureArea { 
       width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.6);
     }
+    
+    /* กรณีเลือกกรอบ 4x6 ให้ปรับพรีวิวเป็นสัดส่วนแนวนอน */
+    #captureArea.landscape { width: 350px; height: 233px; }
 
-    /* เลเยอร์กรอบ (อยู่ชั้นล่าง) */
     #frameOverlay { 
       position: absolute; inset: 0; z-index: 10; background-size: 100% 100%; background-repeat: no-repeat; pointer-events: none; 
-      transition: background-image 0.3s ease;
+      transition: all 0.3s ease;
     }
     
-    /* เลเยอร์รูปถ่าย (z-index: 100 เพื่อให้อยู่ทับหน้ากรอบเสมอ) */
     .photo-item { 
-      position: absolute; left: 15px; width: 190px; height: 140px; z-index: 100; background: #eee; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); overflow: hidden; display: flex; align-items: center; justify-content: center;
+      position: absolute; z-index: 100; background: #eee; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); overflow: hidden; display: flex; align-items: center; justify-content: center;
     }
 
-    /* พิกัดตำแหน่งรูปถ่าย 1, 2, 3 บนจอ */
-    .photo-1 { top: 112px; }
-    .photo-2 { top: 268px; }
-    .photo-3 { top: 424px; }
+    /* ตำแหน่งสำหรับ 2x6 (ค่าเริ่มต้น) */
+    .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
+    .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
+    .photo-3 { left: 15px; width: 190px; height: 140px; top: 424px; }
     
+    /* ตำแหน่งสำหรับ 4x6 (Grid 4 รูป) */
+    .landscape .photo-1 { left: 20px; width: 145px; height: 90px; top: 20px; }
+    .landscape .photo-2 { left: 185px; width: 145px; height: 90px; top: 20px; }
+    .landscape .photo-3 { left: 20px; width: 145px; height: 90px; top: 120px; }
+    .landscape .photo-4 { left: 185px; width: 145px; height: 90px; top: 120px; display: flex; }
+    .photo-4 { display: none; } /* ซ่อนรูปที่ 4 ถ้าไม่ใช่ 4x6 */
+
     .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
     .mirror { transform: scaleX(-1); }
     #camera { border-radius: 1rem; width: 100%; background: #000; height: auto; }
 
-    /* ตกแต่งรูปตัวอย่างกรอบ */
-    .frame-thumb { width: 65px; height: 160px; border: 3px solid transparent; cursor: pointer; transition: 0.2s; border-radius: 8px; background: #fff; object-fit: contain; }
-    .frame-thumb.active { border-color: #fff; transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.6); }
+    .frame-thumb { width: 65px; border: 3px solid transparent; cursor: pointer; transition: 0.2s; border-radius: 8px; background: #fff; }
+    .frame-thumb.active { border-color: #fff; transform: scale(1.05); }
   </style>
 </head>
 <body class="h-full gradient-bg p-4 flex flex-col items-center">
   <div id="flashOverlay" class="fixed inset-0 z-[200] pointer-events-none"></div>
   
   <header class="text-center mb-6 text-white">
-    <h1 class="text-3xl font-bold italic drop-shadow-lg uppercase tracking-wider">KMUTT Photobooth</h1>
-    <p class="text-sm opacity-90">เลือกกรอบที่ต้องการแล้วถ่ายภาพได้เลย!</p>
+    <h1 class="text-3xl font-bold italic drop-shadow-lg">KMUTT PHOTOBOOTH PRO</h1>
+    <p class="text-sm opacity-90">เลือกกรอบที่ต้องการ (รองรับ 2x6" และ 4x6")</p>
   </header>
 
   <div class="max-w-6xl w-full grid lg:grid-cols-3 gap-6 items-start">
     
-    <div class="glass-card rounded-3xl p-6 text-center lg:col-span-1 order-2 lg:order-1">
-      <h2 class="text-white font-bold mb-4">🎨 เลือกรูปแบบกรอบ</h2>
+    <div class="glass-card rounded-3xl p-6 text-center lg:col-span-1">
+      <h2 class="text-white font-bold mb-4">🎨 เลือกรูปแบบและขนาด</h2>
       <div class="flex lg:flex-col flex-row justify-center gap-6 overflow-x-auto p-2">
         <div class="flex flex-col items-center gap-2">
-          <img src="myframe.png" class="frame-thumb active" onclick="changeFrame('myframe.png', this)">
-          <span class="text-white text-xs font-bold bg-black/20 px-3 py-1 rounded-full">Classic Red</span>
+          <img src="myframe.png" class="frame-thumb active h-[140px]" onclick="changeFrame('myframe.png', '2x6', this)">
+          <span class="text-white text-[10px] font-bold">2x6" Classic</span>
         </div>
         <div class="flex flex-col items-center gap-2">
-          <img src="frame1.png" class="frame-thumb" onclick="changeFrame('frame1.png', this)">
-          <span class="text-white text-xs font-bold bg-black/20 px-3 py-1 rounded-full">New Design</span>
+          <img src="frame1.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame1.png', '2x6', this)">
+          <span class="text-white text-[10px] font-bold">2x6" New</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <img src="frame_4x6.png" class="frame-thumb h-[60px] w-[90px] mt-10" onclick="changeFrame('frame_4x6.png', '4x6', this)">
+          <span class="text-white text-[10px] font-bold">4x6" Jumbo</span>
         </div>
       </div>
     </div>
 
-    <div class="glass-card rounded-3xl p-6 text-center lg:col-span-1 order-1 lg:order-2">
-      <div class="relative overflow-hidden bg-black rounded-2xl mb-4 shadow-inner">
+    <div class="glass-card rounded-3xl p-6 text-center lg:col-span-1">
+      <div class="relative overflow-hidden bg-black rounded-2xl mb-4">
         <video id="camera" autoplay playsinline muted class="mirror"></video>
-        <div id="countdown" class="absolute inset-0 flex items-center justify-center text-white text-9xl font-bold hidden drop-shadow-2xl">3</div>
+        <div id="countdown" class="absolute inset-0 flex items-center justify-center text-white text-9xl font-bold hidden">3</div>
       </div>
       <div class="grid grid-cols-4 gap-3">
-        <button id="switchBtn" class="col-span-1 py-4 bg-gray-800 text-white rounded-2xl font-bold shadow-lg hover:bg-gray-700 active:scale-90 transition-all">🔄</button>
-        <button id="captureBtn" class="col-span-3 py-4 bg-white text-red-600 rounded-2xl font-bold text-xl shadow-xl hover:bg-gray-100 active:scale-95 transition-all">📸 ถ่ายรูป</button>
+        <button id="switchBtn" class="col-span-1 py-4 bg-gray-800 text-white rounded-2xl">🔄</button>
+        <button id="captureBtn" class="col-span-3 py-4 bg-white text-red-600 rounded-2xl font-bold text-xl active:scale-95">📸 ถ่ายรูป</button>
       </div>
     </div>
 
-    <div class="glass-card rounded-3xl p-6 flex flex-col items-center lg:col-span-1 order-3">
+    <div class="glass-card rounded-3xl p-6 flex flex-col items-center lg:col-span-1">
       <div id="captureArea">
         <div id="frameOverlay" style="background-image: url('myframe.png');"></div>
         <div id="photo1" class="photo-item photo-1"></div>
         <div id="photo2" class="photo-item photo-2"></div>
         <div id="photo3" class="photo-item photo-3"></div>
+        <div id="photo4" class="photo-item photo-4"></div>
       </div>
       <div class="w-full mt-6 grid grid-cols-2 gap-3">
-        <button id="resetBtn" class="py-3 bg-black/40 text-white rounded-2xl text-sm font-bold border border-white/10 hover:bg-black/60">🔄 ถ่ายใหม่</button>
-        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold shadow-lg hover:bg-green-700 transition-colors">💾 บันทึกรูป (2x6")</button>
+        <button id="resetBtn" class="py-3 bg-black/40 text-white rounded-2xl text-sm font-bold">🔄 ล้างรูป</button>
+        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold shadow-lg">💾 บันทึกรูป</button>
       </div>
     </div>
 
@@ -97,6 +108,7 @@
     let photos = [];
     let currentFacingMode = 'user';
     let stream = null;
+    let currentSize = '2x6'; // '2x6' หรือ '4x6'
     let currentFrameUrl = 'myframe.png'; 
     let frameImg = new Image();
     frameImg.src = currentFrameUrl;
@@ -104,22 +116,30 @@
     async function startCamera() {
       if (stream) stream.getTracks().forEach(track => track.stop());
       try {
-        const constraints = { video: { facingMode: currentFacingMode }, audio: false };
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        const video = document.getElementById('camera');
-        video.srcObject = stream;
-        
-        if (currentFacingMode === 'user') video.classList.add('mirror');
-        else video.classList.remove('mirror');
-      } catch (e) { alert("ไม่สามารถเปิดกล้องได้ครับ"); }
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: false });
+        document.getElementById('camera').srcObject = stream;
+        if (currentFacingMode === 'user') document.getElementById('camera').classList.add('mirror');
+        else document.getElementById('camera').classList.remove('mirror');
+      } catch (e) { alert("เปิดกล้องไม่ได้ครับ"); }
     }
 
-    function changeFrame(url, el) {
+    function changeFrame(url, size, el) {
       currentFrameUrl = url;
+      currentSize = size;
       frameImg.src = url;
-      document.getElementById('frameOverlay').style.backgroundImage = `url('${url}')`;
+      
+      const area = document.getElementById('captureArea');
+      const overlay = document.getElementById('frameOverlay');
+      overlay.style.backgroundImage = `url('${url}')`;
+      
+      if (size === '4x6') area.classList.add('landscape');
+      else area.classList.remove('landscape');
+
       document.querySelectorAll('.frame-thumb').forEach(img => img.classList.remove('active'));
       el.classList.add('active');
+      // ล้างรูปเก่าทุกครั้งที่เปลี่ยนขนาดป้องกันสัดส่วนเพี้ยน
+      photos = [];
+      [1,2,3,4].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
     }
 
     document.getElementById('switchBtn').onclick = () => {
@@ -128,7 +148,8 @@
     };
 
     document.getElementById('captureBtn').onclick = () => {
-      if (photos.length >= 3) return alert("ครบ 3 รูปแล้วครับ");
+      const maxPhotos = (currentSize === '4x6') ? 4 : 3;
+      if (photos.length >= maxPhotos) return alert(`ครบ ${maxPhotos} รูปแล้วครับ`);
       let count = 3;
       const el = document.getElementById('countdown');
       el.classList.remove('hidden');
@@ -146,9 +167,7 @@
       const c = document.getElementById('canvas');
       c.width = v.videoWidth; c.height = v.videoHeight;
       const ctx = c.getContext('2d');
-      if (currentFacingMode === 'user') {
-        ctx.translate(c.width, 0); ctx.scale(-1, 1);
-      }
+      if (currentFacingMode === 'user') { ctx.translate(c.width, 0); ctx.scale(-1, 1); }
       ctx.drawImage(v, 0, 0);
       const data = c.toDataURL('image/jpeg', 0.95);
       photos.push(data);
@@ -159,44 +178,49 @@
       setTimeout(() => flash.classList.remove('flash'), 200);
     }
 
-    // ฟังก์ชันดาวน์โหลดขนาด 2x6 นิ้ว (600x1800 px)
     document.getElementById('downloadBtn').onclick = () => {
-      if(photos.length < 3) return alert("กรุณาถ่ายภาพให้ครบ 3 รูปก่อนนะครับ");
+      const maxPhotos = (currentSize === '4x6') ? 4 : 3;
+      if(photos.length < maxPhotos) return alert(`กรุณาถ่ายให้ครบ ${maxPhotos} รูปครับ`);
+      
       const finalCanvas = document.createElement('canvas');
       const fctx = finalCanvas.getContext('2d');
-      finalCanvas.width = 600;
-      finalCanvas.height = 1800;
-      fctx.fillStyle = "#ffffff";
-      fctx.fillRect(0, 0, 600, 1800);
 
-      // วาดกรอบรูปที่เลือกไว้ (วาดก่อนเพื่อเป็นฉากหลัง)
-      if(frameImg.complete) {
-        fctx.drawImage(frameImg, 0, 0, 600, 1800);
+      if (currentSize === '4x6') {
+        // ขนาด 4x6 นิ้ว (1800x1200 px)
+        finalCanvas.width = 1800; finalCanvas.height = 1200;
+        fctx.fillStyle = "#ffffff"; fctx.fillRect(0, 0, 1800, 1200);
+        if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, 1800, 1200);
+        
+        // วาด Grid 4 รูปสำหรับ 4x6 (ตัวอย่างพิกัด)
+        const gridPos = [
+          {x: 102, y: 102}, {x: 954, y: 102},
+          {x: 102, y: 618}, {x: 954, y: 618}
+        ];
+        photos.forEach((p, i) => {
+          const img = new Image(); img.src = p;
+          fctx.drawImage(img, gridPos[i].x, gridPos[i].y, 744, 480);
+        });
+      } else {
+        // ขนาด 2x6 นิ้ว (600x1800 px) เดิม
+        finalCanvas.width = 600; finalCanvas.height = 1800;
+        fctx.fillStyle = "#ffffff"; fctx.fillRect(0, 0, 600, 1800);
+        if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, 600, 1800);
+        const positionsY = [336, 804, 1272]; 
+        photos.forEach((p, i) => {
+          const img = new Image(); img.src = p;
+          fctx.drawImage(img, 41, positionsY[i], 518, 382);
+        });
       }
 
-      // วาดรูปถ่ายคนทับหน้ากรอบ (ตามตำแหน่งที่คำนวณไว้)
-      const photoW = 518;  const photoH = 382;  const photoX = 41;   
-      const positionsY = [336, 804, 1272]; 
-
-      photos.forEach((p, i) => {
-        const img = new Image();
-        img.src = p;
-        fctx.fillStyle = "white";
-        fctx.fillRect(photoX - 2, positionsY[i] - 2, photoW + 4, photoH + 4);
-        fctx.drawImage(img, photoX, positionsY[i], photoW, photoH);
-      });
-
       const link = document.createElement('a');
-      link.download = `KMUTT-Photo-${Date.now()}.png`;
+      link.download = `KMUTT-Photo-${currentSize}.png`;
       link.href = finalCanvas.toDataURL('image/png', 1.0);
       link.click();
     };
 
     document.getElementById('resetBtn').onclick = () => {
-      if(confirm("ถ่ายใหม่ทั้งหมด?")) {
-        photos = [];
-        [1,2,3].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
-      }
+      photos = [];
+      [1,2,3,4].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
     };
 
     startCamera();
