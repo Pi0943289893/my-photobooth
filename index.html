@@ -3,25 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth - Absolute Fix V24</title>
+  <title>KMUTT Photobooth - Layer Fix V26</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Noto Sans Thai', sans-serif; touch-action: manipulation; }
     .gradient-bg { background: #b91c1c; } 
+    
+    /* 1. ล็อก Z-index บนหน้าจอให้รูปอยู่ล่าง (10) กรอบอยู่บน (100) */
     #captureArea { width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.6); margin: auto; z-index: 1; }
     #captureArea.landscape { width: 340px; height: 226px; }
     
-    /* บนหน้าจอ: บังคับลำดับ z-index ให้กรอบอยู่หน้าสุด */
-    #frameOverlay { position: absolute; inset: 0; z-index: 100; background-size: 100% 100%; background-repeat: no-repeat; pointer-events: none; }
-    .photo-item { position: absolute; z-index: 10; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    #frameOverlay { position: absolute; inset: 0; z-index: 100 !important; background-size: 100% 100%; background-repeat: no-repeat; pointer-events: none; }
+    .photo-item { position: absolute; z-index: 10 !important; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     
-    /* พิกัดรูปถ่าย 2x6 */
     .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
     .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
     .photo-3 { left: 15px; width: 190px; height: 140px; top: 424px; }
-    
-    /* พิกัด Wish Note 4x6 (รูปเดียวฝั่งซ้าย) */
     .note-layout .photo-1 { left: 15px; width: 165px; height: 195px; top: 15px; }
     .note-layout .photo-2, .note-layout .photo-3 { display: none; }
 
@@ -66,8 +64,8 @@
         <div id="frameOverlay" style="background-image: url('myframe.png');"></div>
       </div>
       <div class="w-full mt-6 grid grid-cols-2 gap-3">
-        <button onclick="resetPhotos()" class="py-2.5 bg-black/40 text-white rounded-xl text-xs font-bold">🔄 ถ่ายใหม่</button>
-        <button id="downloadBtn" class="py-2.5 bg-green-600 text-white rounded-xl font-bold text-xs shadow-lg uppercase">💾 SAVE PHOTO</button>
+        <button onclick="resetPhotos()" class="py-2.5 bg-black/40 text-white rounded-xl text-xs font-bold uppercase">ถ่ายใหม่</button>
+        <button id="downloadBtn" class="py-2.5 bg-green-600 text-white rounded-xl font-bold text-xs shadow-lg uppercase">SAVE PHOTO</button>
       </div>
     </div>
   </div>
@@ -120,54 +118,59 @@
       const ctx = c.getContext('2d');
       if (currentFacingMode === 'user') { ctx.translate(c.width, 0); ctx.scale(-1, 1); }
       ctx.drawImage(v, 0, 0);
-      const data = c.toDataURL('image/jpeg', 0.95);
+      const data = c.toDataURL('image/jpeg', 0.9);
       photos.push(data);
-      document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" class="w-full h-full object-cover">`;
+      document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" style="width:100%; height:100%; object-fit:cover;">`;
       const flash = document.getElementById('flashOverlay');
       flash.classList.add('bg-white'); setTimeout(() => flash.classList.remove('bg-white'), 100);
     }
 
-    // ฟังก์ชันสำคัญ: ดาวน์โหลดแบบเป๊ะทุกลำดับ
+    // 3. ฟังก์ชันวาดที่แยกส่วนชัดเจน: วาดคน -> รอเสร็จ -> วาดกรอบทับ
     document.getElementById('downloadBtn').onclick = async () => {
-      if(photos.length < (isNoteMode ? 1 : 3)) return alert("ถ่ายไม่ครบครับ");
-      const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+      const max = isNoteMode ? 1 : 3;
+      if(photos.length < max) return alert("ถ่ายไม่ครบครับ");
       
-      const loadImage = (src) => new Promise((res) => {
+      const c = document.createElement('canvas'); 
+      const ctx = c.getContext('2d');
+      
+      const loadImage = (src) => new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
-        img.onload = () => res(img);
+        img.onload = () => resolve(img);
         img.src = src;
       });
 
+      // ลำดับการวาด 1: ตั้งค่าพื้นหลัง
       if (currentSize === '4x6') {
         c.width = 1800; c.height = 1200; 
         ctx.fillStyle = "#fff"; ctx.fillRect(0,0,1800,1200);
         
-        // 1. วาดรูปคนก่อน (Layer ล่าง)
-        const photoImg = await loadImage(photos[0]);
-        ctx.drawImage(photoImg, 85, 85, 850, 1030); // ปรับพิกัด Wish Note ให้มีพื้นที่ว่างฝั่งขวา
+        // ลำดับการวาด 2: วาดคน (อยู่ล่าง)
+        const pImg = await loadImage(photos[0]);
+        ctx.drawImage(pImg, 102, 102, 796, 996); 
         
-        // 2. วาดกรอบรูปทับหน้า (Layer บน)
-        const frameImg = await loadImage(currentFrameUrl);
-        ctx.drawImage(frameImg, 0, 0, 1800, 1200);
+        // ลำดับการวาด 3: วาดกรอบรูปทับหน้าสุด (บรรทัดสุดท้ายคือผู้ชนะ)
+        const fImg = await loadImage(currentFrameUrl + '?t=' + new Date().getTime());
+        ctx.drawImage(fImg, 0, 0, 1800, 1200);
+
       } else {
         c.width = 600; c.height = 1800; 
         ctx.fillStyle = "#fff"; ctx.fillRect(0,0,600,1800);
         const py = [336, 804, 1272];
         
-        // 1. วาดรูปคนทั้ง 3 ใบก่อน
+        // ลำดับการวาด 2: วาดคน 3 ใบ
         for(let i=0; i<photos.length; i++) {
-          const photoImg = await loadImage(photos[i]);
-          ctx.drawImage(photoImg, 41, py[i], 518, 382);
+          const pImg = await loadImage(photos[i]);
+          ctx.drawImage(pImg, 41, py[i], 518, 382);
         }
         
-        // 2. วาดกรอบรูปทับหน้าสุด
-        const frameImg = await loadImage(currentFrameUrl);
-        ctx.drawImage(frameImg, 0, 0, 600, 1800);
+        // ลำดับการวาด 3: วาดกรอบรูปทับหน้าสุด (บรรทัดสุดท้ายคือผู้ชนะ)
+        const fImg = await loadImage(currentFrameUrl + '?t=' + new Date().getTime());
+        ctx.drawImage(fImg, 0, 0, 600, 1800);
       }
       
       const link = document.createElement('a');
-      link.download = `KMUTT-Photo-${Date.now()}.png`;
+      link.download = `KMUTT-Photo.png`;
       link.href = c.toDataURL('image/png', 1.0);
       link.click();
     };
