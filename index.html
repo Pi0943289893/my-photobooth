@@ -24,13 +24,11 @@
     
     .photo-item { 
       position: absolute; z-index: 100; background: #eee; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); overflow: hidden; display: flex; align-items: center; justify-content: center;
-      transition: border-radius 0.3s ease; /* เพิ่มเพื่อให้เปลี่ยนรูปทรงให้นุ่มนวล */
+      transition: border-radius 0.3s ease;
     }
 
-    /* --- ส่วนที่เพิ่มใหม่เพื่อรองรับขอบมน โดยไม่ยุ่งกับของเดิม --- */
-    .rounded-slot .photo-item { border-radius: 30px; } /* สำหรับกรอบ Nun & Ton */
-    .square-slot .photo-item { border-radius: 0px; }   /* สำหรับกรอบปกติ */
-    /* -------------------------------------------------- */
+    .rounded-slot .photo-item { border-radius: 30px; } 
+    .square-slot .photo-item { border-radius: 0px; }   
 
     .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
     .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
@@ -144,7 +142,6 @@
       } catch (e) { alert("เปิดกล้องไม่ได้ครับ"); }
     }
 
-    // เพิ่ม Parameter 'shape' เพื่อเปลี่ยนรูปทรงช่องใส่รูป
     function changeFrame(url, size, layout, shape, el) {
       currentFrameUrl = url;
       currentSize = size;
@@ -156,7 +153,6 @@
       overlay.style.backgroundImage = `url('${url}')`;
       
       area.className = ''; 
-      // ใส่คลาสคุมความมน/เหลี่ยม
       area.classList.add(`${shape}-slot`);
 
       if (layout === 'grid' || layout === 'wish-note-land') area.classList.add('landscape');
@@ -200,6 +196,43 @@
       document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" style="width:100%; height:100%; object-fit:cover;">`;
     }
 
+    // --- ส่วนที่เพิ่มใหม่: ฟังก์ชันช่วยวาดรูปขอบมนและ Crop อัตโนมัติ ---
+    async function drawImageRounded(ctx, img, x, y, width, height, radius) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+        ctx.clip();
+
+        // คำนวณ Aspect Ratio เพื่อ Crop แบบ Center Cover
+        const imgRatio = img.width / img.height;
+        const targetRatio = width / height;
+        let sx, sy, sWidth, sHeight;
+
+        if (imgRatio > targetRatio) {
+            sHeight = img.height;
+            sWidth = img.height * targetRatio;
+            sx = (img.width - sWidth) / 2;
+            sy = 0;
+        } else {
+            sWidth = img.width;
+            sHeight = img.width / targetRatio;
+            sx = 0;
+            sy = (img.height - sHeight) / 2;
+        }
+
+        ctx.drawImage(img, sx, sy, sWidth, sHeight, x, y, width, height);
+        ctx.restore();
+    }
+
     document.getElementById('downloadBtn').onclick = async () => {
       const max = (currentLayout === 'grid') ? 4 : (currentLayout === 'strip' ? 3 : 1);
       if(photos.length < max) return alert("ถ่ายไม่ครบครับ");
@@ -208,28 +241,41 @@
       const fctx = finalCanvas.getContext('2d');
       const loadImage = (src) => new Promise(res => { const img = new Image(); img.crossOrigin="anonymous"; img.onload=()=>res(img); img.src=src; });
 
+      // เช็คว่าต้องการขอบมนหรือไม่
+      const isRounded = document.getElementById('captureArea').classList.contains('rounded-slot');
+      const radius = isRounded ? 40 : 0;
+
       if (currentSize === '4x6') {
         finalCanvas.width = (currentLayout === 'portrait') ? 1200 : 1800;
         finalCanvas.height = (currentLayout === 'portrait') ? 1800 : 1200;
         fctx.fillStyle = "#ffffff"; fctx.fillRect(0,0,finalCanvas.width,finalCanvas.height);
         
-        if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, finalCanvas.width, finalCanvas.height);
-        
         if (currentLayout === 'grid') {
           const gridPos = [{x:102,y:102},{x:954,y:102},{x:102,y:618},{x:954,y:618}];
-          for(let i=0; i<4; i++) { const img = await loadImage(photos[i]); fctx.drawImage(img, gridPos[i].x, gridPos[i].y, 744, 480); }
+          for(let i=0; i<4; i++) { 
+            const img = await loadImage(photos[i]); 
+            await drawImageRounded(fctx, img, gridPos[i].x, gridPos[i].y, 744, 480, radius);
+          }
         } else if (currentLayout === 'wish-note-land') {
-          const img = await loadImage(photos[0]); fctx.drawImage(img, 102, 102, 822, 996);
+          const img = await loadImage(photos[0]); 
+          await drawImageRounded(fctx, img, 102, 102, 822, 996, radius);
         } else if (currentLayout === 'portrait') {
-          const img = await loadImage(photos[0]); fctx.drawImage(img, 100, 100, 1000, 770);
+          const img = await loadImage(photos[0]); 
+          await drawImageRounded(fctx, img, 100, 100, 1000, 770, radius);
         }
       } else {
         finalCanvas.width = 600; finalCanvas.height = 1800;
         fctx.fillStyle = "#ffffff"; fctx.fillRect(0, 0, 600, 1800);
-        if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, 600, 1800);
         const py = [336, 804, 1272];
-        for(let i=0; i<3; i++) { const img = await loadImage(photos[i]); fctx.drawImage(img, 41, py[i], 518, 382); }
+        for(let i=0; i<3; i++) { 
+          const img = await loadImage(photos[i]); 
+          await drawImageRounded(fctx, img, 41, py[i], 518, 382, radius);
+        }
       }
+      
+      // วาดกรอบทับเป็น Layer สุดท้าย
+      if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, finalCanvas.width, finalCanvas.height);
+
       const link = document.createElement('a'); link.download = `Photo.png`; link.href = finalCanvas.toDataURL('image/png', 1.0); link.click();
     };
 
@@ -238,4 +284,3 @@
   </script>
 </body>
 </html>
-
