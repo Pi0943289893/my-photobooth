@@ -3,69 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth - Ultimate Multi-Size</title>
+  <title>KMUTT Photobooth FIX</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * { font-family: 'Noto Sans Thai', sans-serif; touch-action: manipulation; }
+    * { font-family: sans-serif; touch-action: manipulation; }
     .gradient-bg { background: #b91c1c; } 
-    #captureArea { width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+    #captureArea { width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; }
     #captureArea.landscape { width: 350px; height: 233px; }
     #captureArea.portrait-4x6 { width: 233px; height: 350px; }
-    #frameOverlay { position: absolute; inset: 0; z-index: 10; background-size: 100% 100%; background-repeat: no-repeat; pointer-events: none; transition: all 0.3s ease; }
-    .photo-item { position: absolute; z-index: 100; background: #eee; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); overflow: hidden; display: flex; align-items: center; justify-content: center; transition: border-radius 0.3s ease; }
-    .rounded-slot .photo-item { border-radius: 30px; } 
-    .square-slot .photo-item { border-radius: 0px; }   
+    #frameOverlay { position: absolute; inset: 0; z-index: 50; background-size: 100% 100%; pointer-events: none; }
+    .photo-item { position: absolute; z-index: 10; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    
+    /* พิกัดบนหน้าจอ Preview */
     .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
     .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
     .photo-3 { left: 15px; width: 190px; height: 140px; top: 424px; }
+    
     .landscape .photo-1 { left: 20px; width: 145px; height: 90px; top: 20px; }
     .landscape .photo-2 { left: 185px; width: 145px; height: 90px; top: 20px; }
     .landscape .photo-3 { left: 20px; width: 145px; height: 90px; top: 120px; }
-    .landscape .photo-4 { left: 185px; width: 145px; height: 90px; top: 120px; display: flex; }
-    .wish-note-land .photo-1 { left: 20px; width: 160px; height: 190px; top: 20px; }
-    .wish-note-land .photo-2, .wish-note-land .photo-3, .wish-note-land .photo-4 { display: none; }
-    .portrait-4x6 .photo-1 { left: 20px; width: 193px; height: 150px; top: 20px; }
-    .photo-4 { display: none; } 
-    .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .landscape .photo-4 { left: 185px; width: 145px; height: 90px; top: 120px; }
+
+    .rounded-slot .photo-item { border-radius: 20px; }
+    .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-radius: 2rem; padding: 1.5rem; }
     .mirror { transform: scaleX(-1); }
-    #camera { border-radius: 1rem; width: 100%; background: #000; height: auto; }
-    .frame-thumb { width: 65px; border: 3px solid transparent; cursor: pointer; transition: 0.2s; border-radius: 8px; background: #fff; }
-    .frame-thumb.active { border-color: #fff; transform: scale(1.05); }
   </style>
 </head>
 <body class="h-full gradient-bg p-4 flex flex-col items-center">
-  <div id="flashOverlay" class="fixed inset-0 z-[200] pointer-events-none"></div>
-  <header class="text-center mb-6 text-white">
-    <h1 class="text-3xl font-bold italic drop-shadow-lg uppercase">KMUTT Photobooth PRO</h1>
-  </header>
-
-  <div class="max-w-6xl w-full grid lg:grid-cols-3 gap-6 items-start">
-    <div class="glass-card rounded-3xl p-6 text-center lg:col-span-1">
-      <h2 class="text-white font-bold mb-4 uppercase">🎨 เลือกรูปแบบและขนาด</h2>
-      <div class="flex lg:flex-col flex-row justify-start gap-6 overflow-x-auto p-2">
-        <div class="flex flex-col items-center gap-2"><img src="myframe.png" class="frame-thumb active h-[140px]" onclick="changeFrame('myframe.png', '2x6', 'strip', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" Classic</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame1.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame1.png', '2x6', 'strip', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" New</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_pink.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_pink.png', '2x6', 'strip', 'rounded', this)"><span class="text-white text-[10px] font-bold">2x6" Rounded</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_4x6.png" class="frame-thumb h-[60px] w-[90px] mt-10" onclick="changeFrame('frame_4x6.png', '4x6', 'grid', 'square', this)"><span class="text-white text-[10px] font-bold">4x6" Jumbo</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_4x6_round.png" class="frame-thumb h-[60px] w-[90px] mt-10" onclick="changeFrame('frame_4x6_round.png', '4x6', 'grid', 'rounded', this)"><span class="text-white text-[10px] font-bold">4x6" Rounded</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_4x6_note.png" class="frame-thumb h-[60px] w-[90px] mt-10" onclick="changeFrame('frame_4x6_note.png', '4x6', 'wish-note-land', 'square', this)"><span class="text-white text-[10px] font-bold">4x6" Note (H)</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_4x6_v.png" class="frame-thumb h-[90px] w-[60px] mt-4" onclick="changeFrame('frame_4x6_v.png', '4x6', 'portrait', 'square', this)"><span class="text-white text-[10px] font-bold">4x6" Note (V)</span></div>
+  
+  <div class="max-w-6xl w-full grid lg:grid-cols-3 gap-6">
+    <div class="glass-card text-white text-center">
+      <h2 class="mb-4">เลือกกรอบ</h2>
+      <div class="grid grid-cols-2 gap-2">
+         <button class="bg-white/20 p-2 rounded" onclick="changeFrame('myframe.png', '2x6', 'strip', 'square')">2x6 Standard</button>
+         <button class="bg-white/20 p-2 rounded" onclick="changeFrame('frame_pink.png', '2x6', 'strip', 'rounded')">2x6 Rounded</button>
       </div>
     </div>
 
-    <div class="glass-card rounded-3xl p-6 text-center lg:col-span-1">
-      <div class="relative overflow-hidden bg-black rounded-2xl mb-4">
-        <video id="camera" autoplay playsinline muted class="mirror"></video>
-        <div id="countdown" class="absolute inset-0 flex items-center justify-center text-white text-9xl font-bold hidden">3</div>
-      </div>
-      <div class="grid grid-cols-4 gap-3">
-        <button id="switchBtn" class="col-span-1 py-4 bg-gray-800 text-white rounded-2xl">🔄</button>
-        <button id="captureBtn" class="col-span-3 py-4 bg-white text-red-600 rounded-2xl font-bold text-xl active:scale-95">📸 ถ่ายรูป</button>
-      </div>
+    <div class="glass-card text-center">
+      <video id="camera" autoplay playsinline muted class="mirror w-full rounded-xl mb-4"></video>
+      <button id="captureBtn" class="w-full py-4 bg-white text-red-600 rounded-2xl font-bold">📸 ถ่ายรูป</button>
     </div>
 
-    <div class="glass-card rounded-3xl p-6 flex flex-col items-center lg:col-span-1">
+    <div class="glass-card flex flex-col items-center">
       <div id="captureArea" class="square-slot">
         <div id="frameOverlay" style="background-image: url('myframe.png');"></div>
         <div id="photo1" class="photo-item photo-1"></div>
@@ -73,9 +53,9 @@
         <div id="photo3" class="photo-item photo-3"></div>
         <div id="photo4" class="photo-item photo-4"></div>
       </div>
-      <div class="w-full mt-6 grid grid-cols-2 gap-3">
-        <button id="resetBtn" class="py-3 bg-black/40 text-white rounded-2xl text-sm font-bold uppercase">🔄 ล้างรูป</button>
-        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold shadow-lg uppercase">💾 บันทึกรูป</button>
+      <div class="grid grid-cols-2 gap-2 w-full mt-4">
+        <button id="resetBtn" class="bg-black/50 text-white p-3 rounded-xl">ล้าง</button>
+        <button id="downloadBtn" class="bg-green-600 text-white p-3 rounded-xl font-bold">💾 บันทึกรูป</button>
       </div>
     </div>
   </div>
@@ -84,114 +64,101 @@
 
   <script>
     let photos = [];
-    let currentFacingMode = 'user';
-    let stream = null;
     let currentSize = '2x6';
-    let currentLayout = 'strip'; 
-    let currentFrameUrl = 'myframe.png'; 
-    let frameImg = new Image();
-    frameImg.src = currentFrameUrl;
+    let currentLayout = 'strip';
+    let currentFrameUrl = 'myframe.png';
+
+    // ฟังก์ชันเปลี่ยนกรอบ
+    function changeFrame(url, size, layout, shape) {
+      currentFrameUrl = url; currentSize = size; currentLayout = layout;
+      const area = document.getElementById('captureArea');
+      document.getElementById('frameOverlay').style.backgroundImage = `url('${url}')`;
+      area.className = (layout === 'grid') ? 'landscape' : '';
+      area.classList.add(`${shape}-slot`);
+      photos = [];
+      [1,2,3,4].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
+    }
 
     async function startCamera() {
-      if (stream) stream.getTracks().forEach(track => track.stop());
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: false });
-        document.getElementById('camera').srcObject = stream;
-      } catch (e) { alert("เปิดกล้องไม่ได้ครับ"); }
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      document.getElementById('camera').srcObject = stream;
     }
-
-    function changeFrame(url, size, layout, shape, el) {
-      currentFrameUrl = url; currentSize = size; currentLayout = layout; frameImg.src = url;
-      const area = document.getElementById('captureArea');
-      const overlay = document.getElementById('frameOverlay');
-      overlay.style.backgroundImage = `url('${url}')`;
-      area.className = ''; area.classList.add(`${shape}-slot`);
-      if (layout === 'grid' || layout === 'wish-note-land') area.classList.add('landscape');
-      else if (layout === 'portrait') area.classList.add('portrait-4x6');
-      if (layout === 'wish-note-land') area.classList.add('wish-note-land');
-      document.querySelectorAll('.frame-thumb').forEach(img => img.classList.remove('active'));
-      el.classList.add('active'); photos = []; [1,2,3,4].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
-    }
-
-    document.getElementById('switchBtn').onclick = () => {
-      currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user'; startCamera();
-    };
 
     document.getElementById('captureBtn').onclick = () => {
-      const maxPhotos = (currentLayout === 'grid') ? 4 : (currentLayout === 'strip' ? 3 : 1);
-      if (photos.length >= maxPhotos) return alert(`ครบ ${maxPhotos} รูปแล้วครับ`);
-      let count = 3; const el = document.getElementById('countdown'); el.classList.remove('hidden');
-      const timer = setInterval(() => {
-        count--; el.textContent = count;
-        if(count <= 0) { clearInterval(timer); el.textContent = '3'; el.classList.add('hidden'); takeShot(); }
-      }, 800);
-    };
-
-    function takeShot() {
-      const v = document.getElementById('camera'); const c = document.getElementById('canvas');
+      const v = document.getElementById('camera');
+      const c = document.getElementById('canvas');
       c.width = v.videoWidth; c.height = v.videoHeight;
       const ctx = c.getContext('2d');
-      if (currentFacingMode === 'user') { ctx.translate(c.width, 0); ctx.scale(-1, 1); }
+      ctx.translate(c.width, 0); ctx.scale(-1, 1);
       ctx.drawImage(v, 0, 0);
-      const data = c.toDataURL('image/jpeg', 0.95);
-      photos.push(data);
-      document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" style="width:100%; height:100%; object-fit:cover;">`;
-    }
-
-    async function drawImageRounded(ctx, img, x, y, width, height, radius) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-        ctx.lineTo(x + width, y + height - radius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-        ctx.lineTo(x, y + radius); ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath(); ctx.clip();
-
-        const imgRatio = img.width / img.height;
-        const targetRatio = width / height;
-        let sx, sy, sWidth, sHeight;
-        if (imgRatio > targetRatio) { sHeight = img.height; sWidth = img.height * targetRatio; sx = (img.width - sWidth) / 2; sy = 0; }
-        else { sWidth = img.width; sHeight = img.width / targetRatio; sx = 0; sy = (img.height - sHeight) / 2; }
-        ctx.drawImage(img, sx, sy, sWidth, sHeight, x, y, width, height);
-        ctx.restore();
-    }
-
-    document.getElementById('downloadBtn').onclick = async () => {
-      const max = (currentLayout === 'grid') ? 4 : (currentLayout === 'strip' ? 3 : 1);
-      if(photos.length < max) return alert("ถ่ายไม่ครบครับ");
-      const finalCanvas = document.createElement('canvas'); const fctx = finalCanvas.getContext('2d');
-      const loadImage = (src) => new Promise(res => { const img = new Image(); img.crossOrigin="anonymous"; img.onload=()=>res(img); img.src=src; });
-      const radius = document.getElementById('captureArea').classList.contains('rounded-slot') ? 50 : 0;
-
-      if (currentSize === '4x6') {
-        const isPort = currentLayout === 'portrait';
-        finalCanvas.width = isPort ? 1200 : 1800; finalCanvas.height = isPort ? 1800 : 1200;
-        fctx.fillStyle = "#ffffff"; fctx.fillRect(0,0,finalCanvas.width,finalCanvas.height);
-        
-        if (currentLayout === 'grid') {
-          // คำนวณพิกัดใหม่สำหรับ 4x6 Grid (แก้ปัญหารูปมุด)
-          const gridPos = [{x:103,y:103}, {x:953,y:103}, {x:103,y:617}, {x:953,y:617}];
-          for(let i=0; i<4; i++) { const img = await loadImage(photos[i]); await drawImageRounded(fctx, img, gridPos[i].x, gridPos[i].y, 744, 480, radius); }
-        } else if (currentLayout === 'wish-note-land') {
-          const img = await loadImage(photos[0]); await drawImageRounded(fctx, img, 103, 103, 824, 994, radius);
-        } else if (currentLayout === 'portrait') {
-          const img = await loadImage(photos[0]); await drawImageRounded(fctx, img, 103, 103, 994, 771, radius);
-        }
-      } else {
-        // แก้ไขตำแหน่ง 2x6 Strip ให้ตรงช่อง
-        finalCanvas.width = 600; finalCanvas.height = 1800;
-        fctx.fillStyle = "#ffffff"; fctx.fillRect(0, 0, 600, 1800);
-        const py = [336, 804, 1272]; 
-        for(let i=0; i<3; i++) { const img = await loadImage(photos[i]); await drawImageRounded(fctx, img, 41, py[i], 518, 382, radius); }
+      const data = c.toDataURL('image/jpeg');
+      if (photos.length < 4) {
+        photos.push(data);
+        document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" class="w-full h-full object-cover">`;
       }
-      
-      if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, finalCanvas.width, finalCanvas.height);
-      const link = document.createElement('a'); link.download = `KMUTT_Photo.png`; link.href = finalCanvas.toDataURL('image/png', 1.0); link.click();
     };
 
-    document.getElementById('resetBtn').onclick = () => { photos = []; [1,2,3,4].forEach(i => document.getElementById(`photo${i}`).innerHTML = ''); };
+    // --- ฟังก์ชันดาวน์โหลดที่แก้ไขแล้ว ---
+    document.getElementById('downloadBtn').onclick = async () => {
+      const area = document.getElementById('captureArea');
+      const frame = new Image();
+      frame.crossOrigin = "anonymous";
+      frame.src = currentFrameUrl;
+
+      frame.onload = async () => {
+        const finalCanvas = document.createElement('canvas');
+        const fctx = finalCanvas.getContext('2d');
+        
+        // อ้างอิงขนาด Canvas ตามขนาดไฟล์กรอบรูปจริง (เช่น 600x1800 หรือ 1800x1200)
+        finalCanvas.width = frame.width;
+        finalCanvas.height = frame.height;
+
+        // คำนวณ Ratio ระหว่าง Preview กับไฟล์จริง
+        const ratio = finalCanvas.width / area.offsetWidth;
+
+        // 1. วาดรูปถ่ายก่อน (วาดตามตำแหน่งที่ตาเห็นบน Preview เป๊ะๆ)
+        for (let i = 0; i < photos.length; i++) {
+          const imgEl = document.getElementById(`photo${i+1}`);
+          const img = new Image();
+          img.src = photos[i];
+          await new Promise(r => img.onload = r);
+
+          // ดึงค่าตำแหน่งจาก CSS มาคำนวณใหม่ให้ตรงกับ Canvas
+          const x = imgEl.offsetLeft * ratio;
+          const y = imgEl.offsetTop * ratio;
+          const w = imgEl.offsetWidth * ratio;
+          const h = imgEl.offsetHeight * ratio;
+
+          // วาดรูป (ทำขอบมนตามความเหมาะสม)
+          fctx.save();
+          if(area.classList.contains('rounded-slot')) {
+             const r = 20 * ratio; // รัศมีขอบมนตามสัดส่วน
+             fctx.beginPath();
+             fctx.roundRect(x, y, w, h, r);
+             fctx.clip();
+          }
+          
+          // วาดแบบ Crop Center (Manual Cover)
+          const imgRatio = img.width / img.height;
+          const targetRatio = w / h;
+          let sx, sy, sw, sh;
+          if(imgRatio > targetRatio) { sh = img.height; sw = sh * targetRatio; sx = (img.width - sw)/2; sy = 0; }
+          else { sw = img.width; sh = sw / targetRatio; sx = 0; sy = (img.height - sh)/2; }
+          
+          fctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+          fctx.restore();
+        }
+
+        // 2. วาดกรอบทับด้านบนสุดเสมอ! (เพื่อไม่ให้รูปมุดหรือทับลายกรอบ)
+        fctx.drawImage(frame, 0, 0, finalCanvas.width, finalCanvas.height);
+
+        const link = document.createElement('a');
+        link.download = 'Photo_KMUTT.png';
+        link.href = finalCanvas.toDataURL('image/png');
+        link.click();
+      };
+    };
+
     startCamera();
   </script>
 </body>
