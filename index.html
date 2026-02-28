@@ -196,14 +196,13 @@
       document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" style="width:100%; height:100%; object-fit:cover;">`;
     }
 
-    // --- ฟังก์ชันที่เพิ่มใหม่: ช่วยวาดรูปขอบมนลงใน Canvas ---
+    // --- ฟังก์ชันที่แก้ไข: จัดการทั้ง "ขอบมน" และ "แก้รูปเบี้ยว (Center Crop)" สำหรับมือถือ ---
     function drawRoundedImage(ctx, img, x, y, w, h, r) {
         ctx.save();
         ctx.beginPath();
         if (typeof ctx.roundRect === 'function') {
             ctx.roundRect(x, y, w, h, r);
         } else {
-            // สำรองสำหรับเบราว์เซอร์เก่า
             ctx.moveTo(x + r, y);
             ctx.arcTo(x + w, y, x + w, y + h, r);
             ctx.arcTo(x + w, y + h, x, y + h, r);
@@ -212,7 +211,27 @@
         }
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(img, x, y, w, h);
+
+        // --- เพิ่ม Logic แก้ไขรูปเบี้ยว (Center Crop) ---
+        const imgRatio = img.width / img.height;
+        const targetRatio = w / h;
+        let sx, sy, sWidth, sHeight;
+
+        if (imgRatio > targetRatio) {
+            // ภาพต้นฉบับกว้างกว่าช่อง (เช่น กล้องแนวนอน) -> ตัดซ้ายขวาออก
+            sHeight = img.height;
+            sWidth = img.height * targetRatio;
+            sx = (img.width - sWidth) / 2;
+            sy = 0;
+        } else {
+            // ภาพต้นฉบับสูงกว่าช่อง (เช่น ถ่ายมือถือแนวตั้ง) -> ตัดบนล่างออก
+            sWidth = img.width;
+            sHeight = img.width / targetRatio;
+            sx = 0;
+            sy = (img.height - sHeight) / 2;
+        }
+
+        ctx.drawImage(img, sx, sy, sWidth, sHeight, x, y, w, h);
         ctx.restore();
     }
 
@@ -224,7 +243,6 @@
       const fctx = finalCanvas.getContext('2d');
       const loadImage = (src) => new Promise(res => { const img = new Image(); img.crossOrigin="anonymous"; img.onload=()=>res(img); img.src=src; });
 
-      // ดึงค่ารัศมีความมนจากหน้าจอ
       const isRounded = document.getElementById('captureArea').classList.contains('rounded-slot');
       const radius = isRounded ? 40 : 0; 
 
