@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth PRO - All Frames Restored</title>
+  <title>KMUTT Photobooth PRO - Final Fixed</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -17,12 +17,10 @@
     .rounded-slot .photo-item { border-radius: 30px; } 
     .square-slot .photo-item { border-radius: 0px; }   
 
-    /* พิกัด 3 รูปเดิม */
     .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
     .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
     .photo-3 { left: 15px; width: 190px; height: 140px; top: 424px; }
     
-    /* พิกัดสำหรับ Layout 2 รูปใหม่ */
     .strip-2 .photo-1 { left: 15px; width: 190px; height: 140px; top: 215px; }
     .strip-2 .photo-2 { left: 15px; width: 190px; height: 140px; top: 375px; }
     .strip-2 .photo-3 { display: none; }
@@ -31,8 +29,12 @@
     .landscape .photo-2 { left: 185px; width: 145px; height: 90px; top: 20px; }
     .landscape .photo-3 { left: 20px; width: 145px; height: 90px; top: 120px; }
     .landscape .photo-4 { left: 185px; width: 145px; height: 90px; top: 120px; display: flex; }
+    
     .wish-note-land .photo-1 { left: 20px; width: 160px; height: 190px; top: 20px; }
-    .portrait-4x6 .photo-1 { left: 20px; width: 193px; height: 150px; top: 20px; }
+    
+    /* แก้ไขตำแหน่งรูปใน 4x6 Note แนวตั้ง (Note V) */
+    .portrait-4x6 .photo-1 { left: 15px; width: 203px; height: 155px; top: 20px; }
+    
     .photo-4 { display: none; } 
     .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
     .mirror { transform: scaleX(-1); }
@@ -49,10 +51,7 @@
     <div class="glass-card rounded-3xl p-6 text-center lg:col-span-1">
       <h2 class="text-white font-bold mb-4 uppercase">🎨 เลือกรูปแบบและขนาด</h2>
       <div class="flex lg:flex-col flex-row justify-start gap-6 overflow-x-auto p-2">
-        <div class="flex flex-col items-center gap-2">
-          <img src="frame_v_2.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_v_2.png', '2x6', 'strip-2', 'square', this)">
-          <span class="text-white text-[10px] font-bold">2x6" (2 รูป)</span>
-        </div>
+        <div class="flex flex-col items-center gap-2"><img src="frame_v_2.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_v_2.png', '2x6', 'strip-2', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" (2 รูป)</span></div>
         <div class="flex flex-col items-center gap-2"><img src="myframe.png" class="frame-thumb active h-[140px]" onclick="changeFrame('myframe.png', '2x6', 'strip', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" Classic</span></div>
         <div class="flex flex-col items-center gap-2"><img src="frame1.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame1.png', '2x6', 'strip', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" New</span></div>
         <div class="flex flex-col items-center gap-2"><img src="frame_pink.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_pink.png', '2x6', 'strip', 'rounded', this)"><span class="text-white text-[10px] font-bold">2x6" Rounded</span></div>
@@ -95,8 +94,14 @@
 
     async function startCamera() {
       if (stream) stream.getTracks().forEach(track => track.stop());
-      try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: false }); document.getElementById('camera').srcObject = stream; } 
-      catch (e) { alert("เปิดกล้องไม่ได้ครับ"); }
+      try { 
+        // แก้ไขระบบสลับกล้องให้ทำงานบนมือถือได้จริง
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: false }); 
+        const v = document.getElementById('camera');
+        v.srcObject = stream;
+        // ปรับกระจกเงาเฉพาะกล้องหน้า
+        v.className = (currentFacingMode === 'user') ? 'mirror' : '';
+      } catch (e) { alert("เปิดกล้องไม่ได้ครับ หรือลองตรวจสอบการอนุญาตใช้งานกล้อง"); }
     }
 
     function changeFrame(url, size, layout, shape, el) {
@@ -113,6 +118,12 @@
       document.querySelectorAll('.frame-thumb').forEach(img => img.classList.remove('active'));
       el.classList.add('active'); photos = []; [1,2,3,4].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
     }
+
+    // แก้ไขคำสั่งปุ่มสลับกล้อง
+    document.getElementById('switchBtn').onclick = () => {
+      currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+      startCamera();
+    };
 
     document.getElementById('captureBtn').onclick = () => {
       let maxPhotos = 3;
@@ -131,7 +142,9 @@
     function takeShot() {
       const v = document.getElementById('camera'); const c = document.getElementById('canvas');
       c.width = v.videoWidth; c.height = v.videoHeight;
-      const ctx = c.getContext('2d'); if (currentFacingMode === 'user') { ctx.translate(c.width, 0); ctx.scale(-1, 1); }
+      const ctx = c.getContext('2d'); 
+      // จัดการ Mirror เฉพาะตอนเซฟรูปด้วยกล้องหน้า
+      if (currentFacingMode === 'user') { ctx.translate(c.width, 0); ctx.scale(-1, 1); }
       ctx.drawImage(v, 0, 0); const data = c.toDataURL('image/jpeg', 0.95);
       photos.push(data); document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" style="width:100%; height:100%; object-fit:cover;">`;
     }
@@ -160,13 +173,15 @@
         finalCanvas.width = (currentLayout === 'portrait') ? 1200 : 1800; finalCanvas.height = (currentLayout === 'portrait') ? 1800 : 1200;
         fctx.fillStyle = "#ffffff"; fctx.fillRect(0,0,finalCanvas.width,finalCanvas.height);
         if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, finalCanvas.width, finalCanvas.height);
+        
         if (currentLayout === 'grid') {
           const gridPos = [{x:102,y:102},{x:954,y:102},{x:102,y:618},{x:954,y:618}];
           for(let i=0; i<4; i++) { const img = await loadImage(photos[i]); drawRoundedImage(fctx, img, gridPos[i].x, gridPos[i].y, 744, 480, radius); }
         } else if (currentLayout === 'wish-note-land') {
           const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 102, 102, 822, 996, radius);
         } else if (currentLayout === 'portrait') {
-          const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 100, 100, 1000, 770, radius);
+          // ปรับพิกัดวาดบน Canvas 1800x1200 สำหรับ Note V ให้เว้นครึ่งล่าง
+          const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 75, 100, 1050, 800, radius);
         }
       } else {
         finalCanvas.width = 600; finalCanvas.height = 1800; fctx.fillStyle = "#ffffff"; fctx.fillRect(0, 0, 600, 1800);
