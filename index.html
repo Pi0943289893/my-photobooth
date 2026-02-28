@@ -48,8 +48,17 @@
     .photo-4 { display: none; } 
 
     .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    
+    /* --- แก้ไขเฉพาะจุด: ปรับให้กล้องสมส่วน ไม่บีบภาพ --- */
     .mirror { transform: scaleX(-1); }
-    #camera { border-radius: 1rem; width: 100%; background: #000; height: auto; }
+    #camera { 
+      border-radius: 1rem; 
+      width: 100%; 
+      background: #000; 
+      height: 300px; /* กำหนดความสูงคงที่เพื่อคุมทรง */
+      object-fit: cover; /* หัวใจสำคัญ: ทำให้ภาพสมส่วนเสมอ ตัดขอบส่วนเกินทิ้งแทนการบีบ */
+    }
+    /* ------------------------------------------- */
 
     .frame-thumb { width: 65px; border: 3px solid transparent; cursor: pointer; transition: 0.2s; border-radius: 8px; background: #fff; }
     .frame-thumb.active { border-color: #fff; transform: scale(1.05); }
@@ -196,7 +205,7 @@
       document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" style="width:100%; height:100%; object-fit:cover;">`;
     }
 
-    // --- ฟังก์ชันที่แก้ไข: จัดการทั้ง "ขอบมน" และ "แก้รูปเบี้ยว (Center Crop)" สำหรับมือถือ ---
+    // ฟังก์ชันวาดรูปพร้อมทำขอบมนและ Center Crop สำหรับดาวน์โหลด
     function drawRoundedImage(ctx, img, x, y, w, h, r) {
         ctx.save();
         ctx.beginPath();
@@ -212,19 +221,17 @@
         ctx.closePath();
         ctx.clip();
 
-        // --- เพิ่ม Logic แก้ไขรูปเบี้ยว (Center Crop) ---
+        // Center Crop Logic
         const imgRatio = img.width / img.height;
         const targetRatio = w / h;
         let sx, sy, sWidth, sHeight;
 
         if (imgRatio > targetRatio) {
-            // ภาพต้นฉบับกว้างกว่าช่อง (เช่น กล้องแนวนอน) -> ตัดซ้ายขวาออก
             sHeight = img.height;
             sWidth = img.height * targetRatio;
             sx = (img.width - sWidth) / 2;
             sy = 0;
         } else {
-            // ภาพต้นฉบับสูงกว่าช่อง (เช่น ถ่ายมือถือแนวตั้ง) -> ตัดบนล่างออก
             sWidth = img.width;
             sHeight = img.width / targetRatio;
             sx = 0;
