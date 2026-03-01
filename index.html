@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth PRO - Added Rounded 2-Photo Frame</title>
+  <title>KMUTT Photobooth PRO - Final Complete</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -17,20 +17,29 @@
     .rounded-slot .photo-item { border-radius: 30px; } 
     .square-slot .photo-item { border-radius: 0px; }   
 
+    /* พิกัด 3 รูปมาตรฐาน */
     .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
     .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
     .photo-3 { left: 15px; width: 190px; height: 140px; top: 424px; }
     
+    /* พิกัด 2 รูป (Strip-2) */
     .strip-2 .photo-1 { left: 15px; width: 190px; height: 140px; top: 215px; }
     .strip-2 .photo-2 { left: 15px; width: 190px; height: 140px; top: 375px; }
     .strip-2 .photo-3 { display: none; }
 
+    /* 4x6 มาตรฐาน 4 รูป */
     .landscape .photo-1 { left: 20px; width: 145px; height: 90px; top: 20px; }
     .landscape .photo-2 { left: 185px; width: 145px; height: 90px; top: 20px; }
     .landscape .photo-3 { left: 20px; width: 145px; height: 90px; top: 120px; }
     .landscape .photo-4 { left: 185px; width: 145px; height: 90px; top: 120px; display: flex; }
-    .wish-note-land .photo-1 { left: 15px; width: 180px; height: 190px; top: 20px; }
+    
+    /* แก้ไข: 4x6 Note H (แนวนอน) วางซ้าย เว้นขวาไว้เขียนอวยพร */
+    .wish-note-land .photo-1 { left: 15px; width: 185px; height: 193px; top: 20px; }
+    .wish-note-land .photo-2, .wish-note-land .photo-3, .wish-note-land .photo-4 { display: none; }
+    
+    /* แก้ไข: 4x6 Note V (แนวตั้ง) วางบน เว้นล่างไว้เขียนอวยพร */
     .portrait-4x6 .photo-1 { left: 15px; width: 203px; height: 155px; top: 20px; }
+    .portrait-4x6 .photo-2, .portrait-4x6 .photo-3, .portrait-4x6 .photo-4 { display: none; }
     
     .photo-4 { display: none; } 
     .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
@@ -48,10 +57,7 @@
     <div class="glass-card rounded-3xl p-6 text-center lg:col-span-1">
       <h2 class="text-white font-bold mb-4 uppercase">🎨 เลือกรูปแบบและขนาด</h2>
       <div class="flex lg:flex-col flex-row justify-start gap-6 overflow-x-auto p-2">
-        <div class="flex flex-col items-center gap-2">
-          <img src="frame_v_2_round.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_v_2_round.png', '2x6', 'strip-2', 'rounded', this)">
-          <span class="text-white text-[10px] font-bold">2x6" (2รูป-มน)</span>
-        </div>
+        <div class="flex flex-col items-center gap-2"><img src="frame_v_2_round.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_v_2_round.png', '2x6', 'strip-2', 'rounded', this)"><span class="text-white text-[10px] font-bold">2x6" (2รูป-มน)</span></div>
         <div class="flex flex-col items-center gap-2"><img src="frame_v_2.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_v_2.png', '2x6', 'strip-2', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" (2รูป)</span></div>
         <div class="flex flex-col items-center gap-2"><img src="myframe.png" class="frame-thumb active h-[140px]" onclick="changeFrame('myframe.png', '2x6', 'strip', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" Classic</span></div>
         <div class="flex flex-col items-center gap-2"><img src="frame1.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame1.png', '2x6', 'strip', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" New</span></div>
@@ -159,8 +165,7 @@
     }
 
     document.getElementById('downloadBtn').onclick = async () => {
-      let max = 3; 
-      if (currentLayout === 'grid') max = 4; else if (currentLayout === 'strip-2') max = 2; else if (currentLayout === 'portrait' || currentLayout === 'wish-note-land') max = 1;
+      let max = (currentLayout === 'grid') ? 4 : (currentLayout === 'strip-2' ? 2 : (currentLayout === 'strip' ? 3 : 1));
       if(photos.length < max) return alert("ถ่ายไม่ครบครับ");
       const finalCanvas = document.createElement('canvas'); const fctx = finalCanvas.getContext('2d');
       const loadImage = (src) => new Promise(res => { const img = new Image(); img.crossOrigin="anonymous"; img.onload=()=>res(img); img.src=src; });
@@ -175,9 +180,11 @@
           const gridPos = [{x:102,y:102},{x:954,y:102},{x:102,y:618},{x:954,y:618}];
           for(let i=0; i<4; i++) { const img = await loadImage(photos[i]); drawRoundedImage(fctx, img, gridPos[i].x, gridPos[i].y, 744, 480, radius); }
         } else if (currentLayout === 'wish-note-land') {
-          const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 75, 100, 930, 996, radius);
+          /* พิกัดเซฟ Note H: เว้นที่ด้านข้าง */
+          const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 80, 105, 950, 990, radius);
         } else if (currentLayout === 'portrait') {
-          const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 75, 100, 1050, 800, radius);
+          /* พิกัดเซฟ Note V: เว้นที่ด้านล่าง */
+          const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 80, 105, 1040, 795, radius);
         }
       } else {
         finalCanvas.width = 600; finalCanvas.height = 1800; fctx.fillStyle = "#ffffff"; fctx.fillRect(0, 0, 600, 1800);
