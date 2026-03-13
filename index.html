@@ -3,50 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KMUTT Photobooth - Heart Shape Edition</title>
+  <title>KMUTT Photobooth PRO</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    .gradient-bg { background: #b91c1c; }
-    #captureArea { width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; border: 8px solid #fff; }
-    /* CSS สำหรับแสดงผลหัวใจบนหน้าจอ */
-    .heart-shape { clip-path: path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'); scale: 1.2; }
-    .photo-item { position: absolute; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    .photo-1 { left: 15px; width: 190px; height: 160px; top: 80px; }
-    .photo-2 { left: 15px; width: 190px; height: 160px; top: 260px; }
-    .photo-3 { left: 15px; width: 190px; height: 160px; top: 440px; }
+    * { font-family: 'Noto Sans Thai', sans-serif; }
+    .gradient-bg { background: #b91c1c; } 
+    #captureArea { width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+    #frameOverlay { position: absolute; inset: 0; z-index: 10; background-size: 100% 100%; pointer-events: none; }
+    .photo-item { position: absolute; z-index: 5; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    
+    /* พิกัดรูปถ่าย 3 ใบมาตรฐาน */
+    .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
+    .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
+    .photo-3 { left: 15px; width: 190px; height: 140px; top: 424px; }
+
+    .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
     .mirror { transform: scaleX(-1); }
+    .frame-thumb { width: 65px; border: 3px solid transparent; cursor: pointer; border-radius: 8px; background: #fff; }
+    .frame-thumb.active { border-color: #fff; transform: scale(1.05); }
   </style>
 </head>
 <body class="h-full gradient-bg p-4 flex flex-col items-center">
 
-  <div id="qrModal" class="fixed inset-0 z-[300] hidden flex items-center justify-center bg-black/80">
-    <div class="bg-white p-8 rounded-3xl text-center">
-      <h3 class="font-bold mb-4">สแกนรับรูปหัวใจ ❤️</h3>
-      <div id="qrcode" class="mb-4"></div>
-      <button onclick="this.parentElement.parentElement.classList.add('hidden')" class="px-6 py-2 bg-red-600 text-white rounded-xl">ปิด</button>
+  <div id="qrModal" class="fixed inset-0 z-[300] hidden flex items-center justify-center bg-black/90 p-4">
+    <div class="bg-white p-8 rounded-3xl text-center max-w-sm w-full">
+      <h3 class="text-xl font-bold mb-2">สแกนรับรูปภาพ ❤️</h3>
+      <div id="qrcode" class="flex justify-center my-6"></div>
+      <p id="qrStatus" class="text-gray-500 mb-6">กำลังสร้างลิงก์...</p>
+      <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="w-full py-3 bg-red-600 text-white rounded-2xl font-bold">ปิดหน้าต่าง</button>
     </div>
   </div>
 
-  <h1 class="text-white text-2xl font-bold mb-6">KMUTT HEART BOOTH</h1>
+  <header class="text-center mb-6 text-white"><h1 class="text-3xl font-bold italic uppercase">KMUTT Photobooth</h1></header>
 
-  <div class="grid lg:grid-cols-2 gap-10 items-center">
-    <div class="bg-black/20 p-6 rounded-3xl">
-        <video id="camera" autoplay playsinline class="mirror w-full rounded-2xl mb-4" style="height: 300px; object-fit: cover;"></video>
-        <button id="captureBtn" class="w-full py-4 bg-white text-red-600 font-bold rounded-2xl text-xl">📸 ถ่ายรูปทรงหัวใจ</button>
-        <div class="flex gap-2 mt-4">
-            <button onclick="toggleHeart(true)" class="flex-1 py-2 bg-pink-500 text-white rounded-xl font-bold">เปิดทรงหัวใจ</button>
-            <button onclick="toggleHeart(false)" class="flex-1 py-2 bg-gray-500 text-white rounded-xl font-bold">รูปสี่เหลี่ยมปกติ</button>
+  <div class="max-w-6xl w-full grid lg:grid-cols-3 gap-6">
+    <div class="glass-card rounded-3xl p-6 text-center">
+      <h2 class="text-white font-bold mb-4">เลือกกรอบรูป</h2>
+      <div class="flex lg:flex-col flex-row gap-4 overflow-x-auto justify-center">
+        <div class="flex flex-col items-center gap-1">
+            <div class="frame-thumb h-[80px] flex items-center justify-center text-2xl" onclick="changeFrame('heart_frame.png', this)">❤️</div>
+            <span class="text-white text-[10px]">กรอบหัวใจ</span>
         </div>
+        <div class="flex flex-col items-center gap-1">
+            <img src="myframe.png" class="frame-thumb active h-[80px]" onclick="changeFrame('myframe.png', this)">
+            <span class="text-white text-[10px]">กรอบปกติ</span>
+        </div>
+      </div>
     </div>
 
-    <div class="flex flex-col items-center">
-        <div id="captureArea">
-            <div id="photo1" class="photo-item photo-1"></div>
-            <div id="photo2" class="photo-item photo-2"></div>
-            <div id="photo3" class="photo-item photo-3"></div>
-        </div>
-        <button id="downloadBtn" class="mt-6 px-10 py-3 bg-green-500 text-white font-bold rounded-full shadow-lg">💾 บันทึกรูป & รับ QR</button>
+    <div class="glass-card rounded-3xl p-6 text-center">
+      <video id="camera" autoplay playsinline class="mirror w-full rounded-2xl mb-4 bg-black" style="height:300px; object-fit:cover;"></video>
+      <button id="captureBtn" class="w-full py-4 bg-white text-red-600 rounded-2xl font-bold text-xl">📸 ถ่ายรูป</button>
+      <div id="countdown" class="text-white text-4xl font-bold mt-2 hidden">3</div>
+    </div>
+
+    <div class="glass-card rounded-3xl p-6 flex flex-col items-center">
+      <div id="captureArea">
+        <div id="frameOverlay" style="background-image: url('myframe.png');"></div>
+        <div id="photo1" class="photo-item photo-1"></div>
+        <div id="photo2" class="photo-item photo-2"></div>
+        <div id="photo3" class="photo-item photo-3"></div>
+      </div>
+      <div class="w-full mt-6 grid grid-cols-2 gap-3">
+        <button id="resetBtn" class="py-3 bg-black/40 text-white rounded-2xl text-xs">ล้างรูป</button>
+        <button id="downloadBtn" class="py-3 bg-green-600 text-white rounded-2xl font-bold">💾 บันทึก & QR</button>
+      </div>
     </div>
   </div>
 
@@ -54,78 +77,103 @@
 
   <script>
     let photos = [];
-    let isHeartMode = true; // เริ่มต้นเป็นทรงหัวใจ
-    let stream = null;
+    let currentFrameUrl = 'myframe.png';
+    const apiKey = 'ใส่_API_KEY_ของคุณที่นี่'; // <-- อย่าลืมเอามาใส่ตรงนี้นะครับแม่!
 
-    async function init() {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        document.getElementById('camera').srcObject = stream;
+    // เปิดกล้อง
+    navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
+      document.getElementById('camera').srcObject = s;
+    });
+
+    // เปลี่ยนกรอบ
+    function changeFrame(url, el) {
+      currentFrameUrl = url;
+      document.getElementById('frameOverlay').style.backgroundImage = `url('${url}')`;
+      document.querySelectorAll('.frame-thumb').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
     }
 
-    function toggleHeart(on) {
-        isHeartMode = on;
-        [1,2,3].forEach(i => {
-            const el = document.getElementById(`photo${i}`);
-            if(on) el.classList.add('heart-shape');
-            else el.classList.remove('heart-shape');
-        });
-    }
-
+    // ถ่ายรูป
     document.getElementById('captureBtn').onclick = () => {
-        if(photos.length >= 3) return alert("เต็มแล้วจ้าแม่");
-        const v = document.getElementById('camera');
-        const c = document.getElementById('canvas');
-        c.width = v.videoWidth; c.height = v.videoHeight;
-        const ctx = c.getContext('2d');
-        ctx.translate(c.width, 0); ctx.scale(-1, 1);
-        ctx.drawImage(v, 0, 0);
-        const data = c.toDataURL('image/jpeg');
-        photos.push(data);
-        const target = document.getElementById(`photo${photos.length}`);
-        target.innerHTML = `<img src="${data}" class="w-full h-full object-cover">`;
-        if(isHeartMode) target.classList.add('heart-shape');
+      if (photos.length >= 3) return alert("ครบ 3 รูปแล้วค่ะ");
+      let count = 3;
+      const cd = document.getElementById('countdown');
+      cd.classList.remove('hidden');
+      const timer = setInterval(() => {
+        cd.innerText = count;
+        if (count <= 0) {
+          clearInterval(timer);
+          cd.classList.add('hidden');
+          takeShot();
+        }
+        count--;
+      }, 800);
     };
 
-    // ฟังก์ชันวาดรูปหัวใจลง Canvas จริงเพื่อเซฟ
-    function drawHeartOnCanvas(ctx, img, x, y, w, h) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x + w/2, y + h*0.3);
-        ctx.bezierCurveTo(x + w/2, y, x, y, x, y + h*0.35);
-        ctx.bezierCurveTo(x, y + h*0.7, x + w/2, y + h, x + w/2, y + h);
-        ctx.bezierCurveTo(x + w/2, y + h, x + w, y + h*0.7, x + w, y + h*0.35);
-        ctx.bezierCurveTo(x + w, y, x + w/2, y, x + w/2, y + h*0.3);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(img, x, y, w, h);
-        ctx.restore();
+    function takeShot() {
+      const v = document.getElementById('camera');
+      const c = document.getElementById('canvas');
+      c.width = v.videoWidth; c.height = v.videoHeight;
+      const ctx = c.getContext('2d');
+      ctx.translate(c.width, 0); ctx.scale(-1, 1);
+      ctx.drawImage(v, 0, 0);
+      const data = c.toDataURL('image/jpeg');
+      photos.push(data);
+      document.getElementById(`photo${photos.length}`).innerHTML = `<img src="${data}" class="w-full h-full object-cover">`;
     }
 
+    // รวมรูปและทำ QR
     document.getElementById('downloadBtn').onclick = async () => {
-        if(photos.length < 3) return alert("ถ่ายให้ครบ 3 รูปก่อนนะแม่");
-        const finalC = document.createElement('canvas');
-        finalC.width = 600; finalC.height = 1800;
-        const fctx = finalC.getContext('2d');
-        fctx.fillStyle = "#ffffff";
-        fctx.fillRect(0,0,600,1800);
+      if (photos.length < 3) return alert("ถ่ายให้ครบก่อนนะคะ");
+      
+      const finalC = document.createElement('canvas');
+      finalC.width = 600; finalC.height = 1800;
+      const fctx = finalC.getContext('2d');
 
-        for(let i=0; i<3; i++) {
-            const img = await new Promise(res => { const im = new Image(); im.onload=()=>res(im); im.src=photos[i]; });
-            const py = [150, 650, 1150]; // ตำแหน่งวาดในกระดาษยาว
-            if(isHeartMode) drawHeartOnCanvas(fctx, img, 50, py[i], 500, 450);
-            else fctx.drawImage(img, 50, py[i], 500, 450);
-        }
+      fctx.fillStyle = "#fff";
+      fctx.fillRect(0,0,600,1800);
 
-        const link = document.createElement('a');
-        link.download = "HeartPhoto.png";
-        link.href = finalC.toDataURL();
-        link.click();
-        
-        // ตรงนี้ใส่ฟังก์ชัน uploadToImgBB เหมือนเดิมได้เลยครับแม่
+      // วาดรูป 3 ใบ
+      for(let i=0; i<3; i++) {
+        const img = await new Promise(r => { const im = new Image(); im.onload=()=>r(im); im.src=photos[i]; });
+        fctx.drawImage(img, 41, 336 + (i * 468), 518, 382); // พิกัดโดยประมาณ
+      }
+
+      // วาดกรอบรูปทับ
+      const frame = await new Promise(r => { const im = new Image(); im.onload=()=>r(im); im.src=currentFrameUrl; });
+      fctx.drawImage(frame, 0, 0, 600, 1800);
+
+      // ดาวน์โหลด
+      const link = document.createElement('a');
+      link.download = "Photo_KMUTT.png";
+      link.href = finalC.toDataURL();
+      link.click();
+
+      // สร้าง QR
+      if (apiKey !== 'ใส่_API_KEY_ของคุณที่นี่') {
+        uploadAndQR(finalC);
+      }
     };
 
-    init();
-    toggleHeart(true); // เปิดโหมดหัวใจรอไว้เลย
+    async function uploadAndQR(canvas) {
+      document.getElementById('qrModal').classList.remove('hidden');
+      const data = canvas.toDataURL('image/png').split(',')[1];
+      const formData = new FormData();
+      formData.append('image', data);
+
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, { method: 'POST', body: formData });
+      const json = await res.json();
+      if (json.success) {
+        document.getElementById('qrStatus').innerText = "สแกนรับรูปได้เลย!";
+        document.getElementById('qrcode').innerHTML = "";
+        new QRCode(document.getElementById('qrcode'), { text: json.data.url, width: 160, height: 160 });
+      }
+    }
+
+    document.getElementById('resetBtn').onclick = () => {
+        photos = [];
+        [1,2,3].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
+    };
   </script>
 </body>
 </html>
