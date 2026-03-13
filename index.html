@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KMUTT Photobooth PRO - Final Fixed</title>
+  <title>KMUTT Photobooth PRO - Heart Edition</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* คืนค่า CSS ทั้งหมดจากต้นฉบับ */
     * { font-family: 'Noto Sans Thai', sans-serif; touch-action: manipulation; }
     .gradient-bg { background: #b91c1c; } 
     #captureArea { width: 220px; height: 600px; position: relative; background: #fff; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
@@ -19,7 +18,7 @@
     .rounded-slot .photo-item { border-radius: 30px; } 
     .square-slot .photo-item { border-radius: 0px; }   
 
-    /* พิกัดรูป (คืนค่าเดิม) */
+    /* พิกัดรูปต่างๆ */
     .photo-1 { left: 15px; width: 190px; height: 140px; top: 112px; }
     .photo-2 { left: 15px; width: 190px; height: 140px; top: 268px; }
     .photo-3 { left: 15px; width: 190px; height: 140px; top: 424px; }
@@ -34,6 +33,7 @@
     .wish-note-land .photo-2, .wish-note-land .photo-3, .wish-note-land .photo-4 { display: none; }
     .portrait-4x6 .photo-1 { left: 15px; width: 203px; height: 155px; top: 20px; }
     .portrait-4x6 .photo-2, .portrait-4x6 .photo-3, .portrait-4x6 .photo-4 { display: none; }
+    
     .photo-4 { display: none; } 
     .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
     .mirror { transform: scaleX(-1); }
@@ -41,7 +41,7 @@
     .frame-thumb { width: 65px; border: 3px solid transparent; cursor: pointer; transition: 0.2s; border-radius: 8px; background: #fff; }
     .frame-thumb.active { border-color: #fff; transform: scale(1.05); }
 
-    /* Modal Styling */
+    /* Modal QR Code */
     #qrModal { background: rgba(0,0,0,0.85); }
   </style>
 </head>
@@ -51,7 +51,7 @@
     <div class="bg-white p-8 rounded-3xl text-center max-w-sm w-full shadow-2xl">
       <h3 class="text-xl font-bold text-gray-800 mb-2">สแกนรับรูปภาพ</h3>
       <div id="qrcode" class="flex justify-center my-6"></div>
-      <p id="qrStatus" class="text-sm text-gray-500 mb-6">กำลังอัปโหลดรูป...</p>
+      <p id="qrStatus" class="text-sm text-gray-500 mb-6">กำลังสร้าง QR Code...</p>
       <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="w-full py-3 bg-red-600 text-white rounded-2xl font-bold">ปิด</button>
     </div>
   </div>
@@ -60,17 +60,18 @@
 
   <div class="max-w-6xl w-full grid lg:grid-cols-3 gap-6 items-start">
     <div class="glass-card rounded-3xl p-6 text-center lg:col-span-1">
-      <h2 class="text-white font-bold mb-4 uppercase">🎨 เลือกรูปแบบและขนาด</h2>
+      <h2 class="text-white font-bold mb-4 uppercase">🎨 เลือกรูปแบบ</h2>
       <div class="flex lg:flex-col flex-row justify-start gap-6 overflow-x-auto p-2">
-        <div class="flex flex-col items-center gap-2"><img src="frame_v_2_round.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_v_2_round.png', '2x6', 'strip-2', 'rounded', this)"><span class="text-white text-[10px] font-bold">2x6" (2รูป-มน)</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_v_2.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_v_2.png', '2x6', 'strip-2', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" (2รูป)</span></div>
+        <div class="flex flex-col items-center gap-2">
+            <div class="frame-thumb h-[90px] w-[60px] bg-white flex items-center justify-center text-red-500 text-2xl" onclick="changeFrame('frame_heart_1.png', '4x6', 'portrait', 'rounded', this)">❤️</div>
+            <span class="text-white text-[10px] font-bold">หัวใจเดี่ยว</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+            <div class="frame-thumb h-[140px] bg-white flex items-center justify-center text-red-500 text-2xl" onclick="changeFrame('frame_heart_2.png', '2x6', 'strip-2', 'rounded', this)">💕</div>
+            <span class="text-white text-[10px] font-bold">หัวใจคู่</span>
+        </div>
         <div class="flex flex-col items-center gap-2"><img src="myframe.png" class="frame-thumb active h-[140px]" onclick="changeFrame('myframe.png', '2x6', 'strip', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" Classic</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame1.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame1.png', '2x6', 'strip', 'square', this)"><span class="text-white text-[10px] font-bold">2x6" New</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_pink.png" class="frame-thumb h-[140px]" onclick="changeFrame('frame_pink.png', '2x6', 'strip', 'rounded', this)"><span class="text-white text-[10px] font-bold">2x6" Rounded</span></div>
         <div class="flex flex-col items-center gap-2"><img src="frame_4x6.png" class="frame-thumb h-[60px] w-[90px] mt-10" onclick="changeFrame('frame_4x6.png', '4x6', 'grid', 'square', this)"><span class="text-white text-[10px] font-bold">4x6" Jumbo</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_4x6_round.png" class="frame-thumb h-[60px] w-[90px] mt-10" onclick="changeFrame('frame_4x6_round.png', '4x6', 'grid', 'rounded', this)"><span class="text-white text-[10px] font-bold">4x6" Rounded</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_4x6_note.png" class="frame-thumb h-[60px] w-[90px] mt-10" onclick="changeFrame('frame_4x6_note.png', '4x6', 'wish-note-land', 'square', this)"><span class="text-white text-[10px] font-bold">4x6" Note (H)</span></div>
-        <div class="flex flex-col items-center gap-2"><img src="frame_4x6_v.png" class="frame-thumb h-[90px] w-[60px] mt-4" onclick="changeFrame('frame_4x6_v.png', '4x6', 'portrait', 'square', this)"><span class="text-white text-[10px] font-bold">4x6" Note (V)</span></div>
       </div>
     </div>
 
@@ -100,7 +101,6 @@
   <canvas id="canvas" class="hidden"></canvas>
 
   <script>
-    // --- Logic ทั้งหมด คืนค่าเดิม และแทรก QR Code ---
     let photos = []; let currentFacingMode = 'user'; let stream = null;
     let currentSize = '2x6'; let currentLayout = 'strip'; 
     let currentFrameUrl = 'myframe.png'; let frameImg = new Image(); frameImg.src = currentFrameUrl;
@@ -124,7 +124,6 @@
       if (layout === 'strip-2') area.classList.add('strip-2');
       if (layout === 'grid' || layout === 'wish-note-land') area.classList.add('landscape');
       else if (layout === 'portrait') area.classList.add('portrait-4x6');
-      if (layout === 'wish-note-land') area.classList.add('wish-note-land');
 
       document.querySelectorAll('.frame-thumb').forEach(img => img.classList.remove('active'));
       el.classList.add('active'); photos = []; [1,2,3,4].forEach(i => document.getElementById(`photo${i}`).innerHTML = '');
@@ -161,7 +160,6 @@
         ctx.drawImage(img, sx, sy, sWidth, sHeight, x, y, w, h); ctx.restore();
     }
 
-    // --- ส่วนดาวน์โหลดและอัปโหลด QR ---
     document.getElementById('downloadBtn').onclick = async () => {
       let max = (currentLayout === 'grid') ? 4 : (currentLayout === 'strip-2' ? 2 : (currentLayout === 'strip' ? 3 : 1));
       if(photos.length < max) return alert("ถ่ายไม่ครบครับ");
@@ -174,13 +172,13 @@
         finalCanvas.width = (currentLayout === 'portrait') ? 1200 : 1800; finalCanvas.height = (currentLayout === 'portrait') ? 1800 : 1200;
         fctx.fillStyle = "#ffffff"; fctx.fillRect(0,0,finalCanvas.width,finalCanvas.height);
         if(frameImg.complete) fctx.drawImage(frameImg, 0, 0, finalCanvas.width, finalCanvas.height);
+        
         if (currentLayout === 'grid') {
           const gridPos = [{x:102,y:102},{x:954,y:102},{x:102,y:618},{x:954,y:618}];
           for(let i=0; i<4; i++) { const img = await loadImage(photos[i]); drawRoundedImage(fctx, img, gridPos[i].x, gridPos[i].y, 744, 480, radius); }
-        } else if (currentLayout === 'wish-note-land') {
-          const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 80, 105, 950, 990, radius);
-        } else if (currentLayout === 'portrait') {
-          const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 80, 105, 1040, 795, radius);
+        } else {
+          // สำหรับ Heart 1 รูป (Portrait)
+          const img = await loadImage(photos[0]); drawRoundedImage(fctx, img, 80, 105, 1040, 1500, radius);
         }
       } else {
         finalCanvas.width = 600; finalCanvas.height = 1800; fctx.fillStyle = "#ffffff"; fctx.fillRect(0, 0, 600, 1800);
@@ -189,24 +187,19 @@
         for(let i=0; i<photos.length; i++) { const img = await loadImage(photos[i]); drawRoundedImage(fctx, img, 41, py[i], 518, 382, radius); }
       }
 
-      // ดาวน์โหลดไฟล์
       const link = document.createElement('a'); link.download = `Photo.png`; link.href = finalCanvas.toDataURL('image/png', 1.0); link.click();
-      
-      // อัปโหลดขึ้น ImgBB เพื่อสร้าง QR
       uploadToImgBB(finalCanvas);
     };
 
     async function uploadToImgBB(canvas) {
-      const apiKey = 'ใส่_API_KEY_ของคุณที่นี่'; // อย่าลืมใส่ Key นะครับแม่!
+      const apiKey = 'ใส่_API_KEY_ของคุณที่นี่'; // <<--- ใส่ API Key ตรงนี้นะครับแม่!
       if(apiKey.includes('ใส่_API')) return; 
 
       const modal = document.getElementById('qrModal');
       const qrDiv = document.getElementById('qrcode');
-      const status = document.getElementById('qrStatus');
-
       modal.classList.remove('hidden');
       qrDiv.innerHTML = "";
-      status.innerText = "กำลังอัปโหลดรูป...";
+      document.getElementById('qrStatus').innerText = "กำลังสร้างลิ้งก์...";
 
       const data = canvas.toDataURL('image/png').split(',')[1];
       const formData = new FormData();
@@ -216,10 +209,10 @@
         const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, { method: 'POST', body: formData });
         const json = await res.json();
         if(json.success) {
-          status.innerText = "อัปโหลดสำเร็จ! สแกนได้เลย";
+          document.getElementById('qrStatus').innerText = "สแกนรับรูปได้เลย!";
           new QRCode(qrDiv, { text: json.data.url, width: 200, height: 200, colorDark: "#b91c1c" });
         }
-      } catch(e) { status.innerText = "อัปโหลดล้มเหลว"; }
+      } catch(e) { document.getElementById('qrStatus').innerText = "อัปโหลดไม่สำเร็จ"; }
     }
 
     document.getElementById('resetBtn').onclick = () => { photos = []; [1,2,3,4].forEach(i => document.getElementById(`photo${i}`).innerHTML = ''); };
